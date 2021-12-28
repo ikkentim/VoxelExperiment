@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
+﻿using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,19 +13,31 @@ public class Game1 : Game
     private VertexBuffer? _vertexBuffer;
     private IndexBuffer? _indexBuffer;
     private BasicEffect? _basicEffect;
-    private Camera _camera = new Camera();
-    private readonly WorldManager _worldManager = new();
+    private VertexBuffer? _dbgvertexBuffer;
+    private IndexBuffer? _dbgindexBuffer;
 
+    private readonly Camera _camera = new();
+    private readonly PlayerController _playerController;
+    private readonly WorldManager _worldManager = new();
+    
     public Game1()
     {
-        _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
+
+        _graphics = new GraphicsDeviceManager(this);
+
         IsMouseVisible = true;
+
+        _playerController = new PlayerController(_camera);
     }
 
     protected override void Initialize()
     {
         _worldManager.LoadInitialChunks();
+
+        GlobalGameContext.Initialize(this);
+
+        _playerController.StartCaptureMouse();
 
         base.Initialize();
     }
@@ -78,6 +91,22 @@ public class Game1 : Game
         var vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 8, BufferUsage.WriteOnly);
         var indexBuffer = new IndexBuffer(GraphicsDevice, typeof(short), indices.Length, BufferUsage.WriteOnly);
 
+        _dbgVertices = new[]
+        {
+            new VertexPositionColor(Vector3.Zero, Color.Red),
+            new VertexPositionColor(Vector3.UnitX * 5, Color.Red),
+            new VertexPositionColor(Vector3.Zero, Color.Green),
+            new VertexPositionColor(Vector3.UnitY * 5, Color.Green),
+            new VertexPositionColor(Vector3.Zero, Color.Blue),
+            new VertexPositionColor(Vector3.UnitZ * 5, Color.Blue),
+        };
+        var dbgIndices = new short[] { 0, 1, 2, 3, 4, 5 };
+        _dbgvertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 6, BufferUsage.WriteOnly);
+        _dbgindexBuffer = new IndexBuffer(GraphicsDevice, typeof(short), 6, BufferUsage.WriteOnly);
+        
+        _dbgvertexBuffer.SetData(_dbgVertices);
+        _dbgindexBuffer.SetData(dbgIndices);
+
         vertexBuffer.SetData(vertices);
         indexBuffer.SetData(indices);
 
@@ -85,75 +114,96 @@ public class Game1 : Game
         _indexBuffer = indexBuffer;
     }
 
+    private VertexPositionColor[]? _dbgVertices;
+    private bool _escape = false;
+
     protected override void Update(GameTime gameTime)
     {
-        var kb = Keyboard.GetState();
+        HandleExitAndMouseCapture();
 
-        if (kb.IsKeyDown(Keys.Escape))
-            Exit();
-
-        var m = Vector3.Zero;
-        var r = Vector2.Zero;
-        if (kb.IsKeyDown(Keys.W)) m += Vector3.Forward;
-        if (kb.IsKeyDown(Keys.A)) m += Vector3.Left;
-        if (kb.IsKeyDown(Keys.S)) m += Vector3.Backward;
-        if (kb.IsKeyDown(Keys.D)) m += Vector3.Right;
-        if (kb.IsKeyDown(Keys.Q)) m += Vector3.Down;
-        if (kb.IsKeyDown(Keys.E)) m += Vector3.Up;
-
-        if (kb.IsKeyDown(Keys.Z)) r += Vector2.UnitY;
-        if (kb.IsKeyDown(Keys.X)) r += -Vector2.UnitY;
-        if (kb.IsKeyDown(Keys.C)) r += Vector2.UnitX;
-        if (kb.IsKeyDown(Keys.V)) r += -Vector2.UnitX;
-
-        m *= (float)gameTime.ElapsedGameTime.TotalSeconds;
-        r *= (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-        var q = Quaternion.CreateFromYawPitchRoll(0, r.Y, r.X);
-
-        _camera.Move(m);
-        //_camera.Rotate(q);
-        HandleMouse(gameTime);
+        _playerController.Update(gameTime.GetDeltaTime());
 
         base.Update(gameTime);
     }
 
-    public static Vector2 MouseRotTemp;
-    private void HandleMouse(GameTime gt)
+    private void HandleExitAndMouseCapture()
     {
-        var mouseDefaultPos = new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
-        var mouseSens = 0.5f * (float)gt.ElapsedGameTime.TotalSeconds;
+        var kb = Keyboard.GetState();
 
-        Vector2 mouseDifference;
-        var mouseNow = Mouse.GetState();
-        if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
+        if (kb.IsKeyDown(Keys.Escape))
         {
-            mouseDifference.X = mouseDefaultPos.X - mouseNow.X;
-            mouseDifference.Y = mouseDefaultPos.Y - mouseNow.Y;
-            MouseRotTemp.X += mouseSens * mouseDifference.X;
-            MouseRotTemp.Y += mouseSens * mouseDifference.Y;
+            if (!_escape)
+            {
+                if (_playerController.IsCapturingMouse)
+                {
+                    _playerController.StopMouseCapture();
+                }
+                else
+                {
+                    Exit();
+                }
+            }
 
-            Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
+            _escape = true;
+        }
+        else
+        {
+            _escape = false;
+        }
+
+        var m = Mouse.GetState();
+        if (m.LeftButton == ButtonState.Pressed &&
+            !_playerController.IsCapturingMouse &&
+            IsActive &&
+            m.X >= 0 && m.Y >= 0 && m.X < Window.ClientBounds.Size.X && m.Y < Window.ClientBounds.Size.Y
+           )
+        {
+            _playerController.StartCaptureMouse();
         }
     }
+    
 
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _basicEffect!.View = _camera.GetViewMatrix();
-        _basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(
-            MathHelper.PiOver4, // 90 fov
-            Window.ClientBounds.Width / (float)Window.ClientBounds.Height,
-            1,
-            100);
+        _basicEffect!.View = _camera.ViewMatrix;
+        _basicEffect.Projection = GlobalGameContext.Current.Projection;
         _basicEffect.VertexColorEnabled = true;
 
         GraphicsDevice.SetVertexBuffer(_vertexBuffer);
         GraphicsDevice.Indices = _indexBuffer;
 
-        _worldManager.RenderVisibleChunks(_basicEffect, GraphicsDevice);
+        _worldManager.RenderVisibleChunks(_basicEffect, _camera, GraphicsDevice);
 
+
+
+        // Debug draw
+        // axis lines in world space
+        
+        _basicEffect.World = Matrix.Identity;
+        _basicEffect.CurrentTechnique.Passes[0].Apply();
+
+        GraphicsDevice.SetVertexBuffer(_dbgvertexBuffer);
+        GraphicsDevice.Indices = _dbgindexBuffer;
+        GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
+        
+        // axis lines in cam space
+        
+        var cam =_camera.Transform.Backward * 50;
+        var up = _camera.Transform.Up;
+
+        _basicEffect.View = Matrix.CreateLookAt(cam, Vector3.Zero, up);
+        _basicEffect.World = Matrix.Identity;
+        _basicEffect.VertexColorEnabled = true;
+
+        _basicEffect.CurrentTechnique.Passes[0].Apply();
+
+        GraphicsDevice.SetVertexBuffer(_dbgvertexBuffer);
+        GraphicsDevice.Indices = _dbgindexBuffer;
+        GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
+        
+        
         base.Draw(gameTime);
     }
 }

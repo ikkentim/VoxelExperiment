@@ -6,27 +6,27 @@ namespace MyGame;
 public enum Face
 {
     /// <summary>
-    /// Y+
+    /// Y+, Up
     /// </summary>
     Top = 1,
     /// <summary>
-    /// Y-
+    /// Y-, Down
     /// </summary>
     Bottom = 2,
     /// <summary>
-    /// Z+
+    /// Z+, Backward
     /// </summary>
-    North = 4,
+    South = 4,
     /// <summary>
-    /// Z-
+    /// Z-, Forward
     /// </summary>
-    South = 8,
+    North = 8,
     /// <summary>
-    /// X-
+    /// X- Left
     /// </summary>
     West = 16,
     /// <summary>
-    /// X+
+    /// X+, Right
     /// </summary>
     East = 32,
 }

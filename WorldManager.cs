@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,18 +23,18 @@ public class WorldManager
         };
 
         var t = new TestBlock();
-        chunk.SetBlock(new IntVector3(4, 4, 4), new BlockData
+        chunk.SetBlock(new IntVector3(0, 0, 0), new BlockData
         {
             Kind = t
         });
-        chunk.SetBlock(new IntVector3(5, 4, 4), new BlockData
+        /*chunk.SetBlock(new IntVector3(5, 4, 4), new BlockData
         {
             Kind = t
         });
         chunk.SetBlock(new IntVector3(5, 3, 4), new BlockData
         {
             Kind = t
-        });
+        });*/
 
         return chunk;
     }
@@ -47,7 +48,7 @@ public class WorldManager
         //
     }
 
-    public void RenderVisibleChunks(BasicEffect basicEffect, GraphicsDevice graphicsDevice)
+    public void RenderVisibleChunks(BasicEffect basicEffect, Camera camera, GraphicsDevice graphicsDevice)
     {
         // TODO: To world renderer
         foreach (var chunk in _loadedChunks)
@@ -63,7 +64,7 @@ public class WorldManager
 
                         if (block.Kind != null)
                         {
-                            basicEffect.World = Matrix.CreateTranslation(pos);
+                            basicEffect.World = Matrix.CreateTranslation(pos);// * camera.Transform.WorldToLocal;
 
                             foreach (var pass in basicEffect.CurrentTechnique.Passes)
                             {

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace MyGame;
 
+[DebuggerDisplay("{DebugDisplayString,nq}")]
 public readonly struct IntVector3 : IEquatable<IntVector3>
 {
     public readonly int X;
@@ -18,6 +20,8 @@ public readonly struct IntVector3 : IEquatable<IntVector3>
 
     public static readonly IntVector3 Zero = new(0, 0, 0);
     public static readonly IntVector3 One = new(1, 1, 1);
+
+    internal string DebugDisplayString => $"({X}, {Y}, {Z})";
 
     public bool Equals(IntVector3 other)
     {
