@@ -23,7 +23,7 @@ public class WorldManager
         };
 
         var t = new TestBlock();
-        chunk.SetBlock(new IntVector3(0, 0, 0), new BlockData
+        chunk.SetBlock(new IntVector3(1, 0, 1), new BlockData
         {
             Kind = t
         });
@@ -64,7 +64,7 @@ public class WorldManager
 
                         if (block.Kind != null)
                         {
-                            basicEffect.World = Matrix.CreateTranslation(pos);// * camera.Transform.WorldToLocal;
+                            basicEffect.World = Matrix.CreateTranslation(pos);
 
                             foreach (var pass in basicEffect.CurrentTechnique.Passes)
                             {

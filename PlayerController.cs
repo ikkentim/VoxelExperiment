@@ -1,115 +1,66 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace MyGame;
 
 public class PlayerController
 {
+    private static readonly float LookPitchLimit = MathHelper.ToRadians(75);
     private readonly Camera _camera;
-    private bool _isCapturingMouse = false;
+    
+    private Vector2 _look = new(-MathHelper.PiOver2, 0);
+    private Vector3 _position = Vector3.Zero;
+
+    private MouseInput _mouseInput = new();
+    private KeyboardInput _keyboardInput = new();
 
     public PlayerController(Camera camera)
     {
         _camera = camera;
     }
 
-    public bool IsCapturingMouse => _isCapturingMouse;
-
+    public bool IsCapturingMouse => _mouseInput.IsCapturing;
+    
     public void Update(float deltaTime)
     {
         UpdateWalking(deltaTime);
         UpdateLooking(deltaTime);
+
+        var matrix =
+
+            Matrix.CreateRotationX(_look.Y) *
+            Matrix.CreateRotationY(_look.X) *
+            Matrix.CreateTranslation(_position);
+
+        _camera.Transform.WorldToLocal = matrix;
     }
 
     private void UpdateWalking(float deltaTime)
     {
         const float movementSpeed = 10f;
-
-        var kbVec = GetKeyboardInput();
+        
+        var kbVec = _keyboardInput.GetArrowsInput();
         kbVec *= deltaTime * movementSpeed;
 
-        var delta = Vector3.Transform(kbVec, _camera.Transform.Rotation);
-        _camera.Transform.WorldToLocal *= Matrix.CreateTranslation(delta);
-        //_camera.Position += delta;
+        var mat = Matrix.CreateRotationX(_look.Y) *
+                  Matrix.CreateRotationY(_look.X);
 
-        Debug.WriteLine(_camera.Position);
+        var delta = Vector3.Transform(kbVec, mat);
+        _position += delta;
     }
 
-    private float _yaw;
-    private float _pitch = MathHelper.PiOver2;
-        
     private void UpdateLooking(float deltaTime)
     {
-        const float rotationSpeed = 0.05f;
+        const float rotationSpeed = 0.01f;
         
-        var (yaw, pitch) = MouseOffset * rotationSpeed;
+        var input = _mouseInput.GetInput();
 
-        //_yaw += yaw;
-        //_pitch += pitch;
-        //_pitch = MathHelper.Clamp(_pitch, -MathHelper.PiOver2, MathHelper.PiOver2);
-
-        var mod = Matrix.CreateFromAxisAngle(Vector3.Up, yaw) * Matrix.CreateFromAxisAngle(Vector3.Right, pitch);
-
-        _camera.Transform.WorldToLocal *= mod;
-        CenterMouse();
+        _look -= input * rotationSpeed * deltaTime;
+        _look.X = MathHelper.WrapAngle(_look.X);
+        _look.Y = MathHelper.Clamp(_look.Y, -LookPitchLimit, LookPitchLimit);
     }
 
-    public void StartCaptureMouse()
-    {
-        if (_isCapturingMouse)
-        {
-            return;
-        }
+    public void StartCaptureMouse() => _mouseInput.StartCapture();
 
-        _isCapturingMouse = true;
-
-        GlobalGameContext.Current.Game.IsMouseVisible = false;
-
-        CenterMouse();
-    }
-
-    public void StopMouseCapture()
-    {
-        if (!_isCapturingMouse)
-        {
-            return;
-        }
-
-        _isCapturingMouse = false;
-        GlobalGameContext.Current.Game.IsMouseVisible = true;
-    }
-        
-    private Vector3 GetKeyboardInput()
-    {
-        var kbVec = Vector3.Zero;
-            
-        var kb = Keyboard.GetState();
-        if (kb.IsKeyDown(Keys.W)) kbVec += Vector3.Forward;
-        if (kb.IsKeyDown(Keys.A)) kbVec += Vector3.Left;
-        if (kb.IsKeyDown(Keys.S)) kbVec += Vector3.Backward;
-        if (kb.IsKeyDown(Keys.D)) kbVec += Vector3.Right;
-        if (kb.IsKeyDown(Keys.Q)) kbVec += Vector3.Down;
-        if (kb.IsKeyDown(Keys.E)) kbVec += Vector3.Up;
-
-        return kbVec;
-    }
-
-    private Vector2 MouseCenter => GlobalGameContext.Current.WindowSize / 2;
-    private Vector2 MousePosition => Mouse.GetState().Position.ToVector2();
-
-    private Vector2 MouseOffset => _isCapturingMouse ? MousePosition - MouseCenter : Vector2.Zero;
-
-    private void CenterMouse()
-    {
-        if (!_isCapturingMouse)
-        {
-            return;
-        }
-
-        var centerMouse = MouseCenter;
-        Mouse.SetPosition((int)centerMouse.X, (int)centerMouse.Y);
-    }
-
+    public void StopMouseCapture() => _mouseInput.StopCapture();
 }

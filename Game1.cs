@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -8,18 +6,21 @@ namespace MyGame;
 
 public class Game1 : Game
 {
-    private GraphicsDeviceManager? _graphics;
-    private SpriteBatch? _spriteBatch;
-    private VertexBuffer? _vertexBuffer;
-    private IndexBuffer? _indexBuffer;
-    private BasicEffect? _basicEffect;
-    private VertexBuffer? _dbgvertexBuffer;
-    private IndexBuffer? _dbgindexBuffer;
-
     private readonly Camera _camera = new();
+    private readonly GraphicsDeviceManager _graphics;
     private readonly PlayerController _playerController;
     private readonly WorldManager _worldManager = new();
-    
+    private BasicEffect? _basicEffect;
+    private IndexBuffer? _dbgindexBuffer;
+    private VertexBuffer? _dbgvertexBuffer;
+
+    private VertexPositionColor[]? _dbgVertices;
+    private BasicEffect? _debugEffect;
+    private bool _escape;
+    private IndexBuffer? _indexBuffer;
+    private SpriteBatch? _spriteBatch;
+    private VertexBuffer? _vertexBuffer;
+
     public Game1()
     {
         Content.RootDirectory = "Content";
@@ -39,6 +40,11 @@ public class Game1 : Game
 
         _playerController.StartCaptureMouse();
 
+        _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
+        _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
+        // _graphics.IsFullScreen = true;
+        _graphics.ApplyChanges();
+
         base.Initialize();
     }
 
@@ -46,7 +52,7 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _basicEffect = new BasicEffect(GraphicsDevice);
-
+        _debugEffect = new BasicEffect(GraphicsDevice);
 
         /*    6 ___________7
          *     /|         /|
@@ -85,7 +91,7 @@ public class Game1 : Game
             2, 0, 6, // left
             0, 4, 6,
             1, 3, 5, // right
-            3, 7, 5,
+            3, 7, 5
         };
 
         var vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 8, BufferUsage.WriteOnly);
@@ -98,12 +104,12 @@ public class Game1 : Game
             new VertexPositionColor(Vector3.Zero, Color.Green),
             new VertexPositionColor(Vector3.UnitY * 5, Color.Green),
             new VertexPositionColor(Vector3.Zero, Color.Blue),
-            new VertexPositionColor(Vector3.UnitZ * 5, Color.Blue),
+            new VertexPositionColor(Vector3.UnitZ * 5, Color.Blue)
         };
         var dbgIndices = new short[] { 0, 1, 2, 3, 4, 5 };
         _dbgvertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 6, BufferUsage.WriteOnly);
         _dbgindexBuffer = new IndexBuffer(GraphicsDevice, typeof(short), 6, BufferUsage.WriteOnly);
-        
+
         _dbgvertexBuffer.SetData(_dbgVertices);
         _dbgindexBuffer.SetData(dbgIndices);
 
@@ -113,9 +119,6 @@ public class Game1 : Game
         _vertexBuffer = vertexBuffer;
         _indexBuffer = indexBuffer;
     }
-
-    private VertexPositionColor[]? _dbgVertices;
-    private bool _escape = false;
 
     protected override void Update(GameTime gameTime)
     {
@@ -161,7 +164,7 @@ public class Game1 : Game
             _playerController.StartCaptureMouse();
         }
     }
-    
+
 
     protected override void Draw(GameTime gameTime)
     {
@@ -177,33 +180,31 @@ public class Game1 : Game
         _worldManager.RenderVisibleChunks(_basicEffect, _camera, GraphicsDevice);
 
 
-
         // Debug draw
         // axis lines in world space
-        
-        _basicEffect.World = Matrix.Identity;
-        _basicEffect.CurrentTechnique.Passes[0].Apply();
+        _debugEffect!.View = _camera.ViewMatrix;
+        _debugEffect.Projection = GlobalGameContext.Current.Projection;
+        _debugEffect.World = Matrix.Identity;
+        _debugEffect.VertexColorEnabled = true;
+        _debugEffect.CurrentTechnique.Passes[0].Apply();
 
         GraphicsDevice.SetVertexBuffer(_dbgvertexBuffer);
         GraphicsDevice.Indices = _dbgindexBuffer;
         GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
-        
+
         // axis lines in cam space
-        
-        var cam =_camera.Transform.Backward * 50;
+
+        var cam = _camera.Transform.Backward * 50;
         var up = _camera.Transform.Up;
 
-        _basicEffect.View = Matrix.CreateLookAt(cam, Vector3.Zero, up);
-        _basicEffect.World = Matrix.Identity;
-        _basicEffect.VertexColorEnabled = true;
-
-        _basicEffect.CurrentTechnique.Passes[0].Apply();
+        _debugEffect.View = Matrix.CreateLookAt(cam, Vector3.Zero, up);
+        _debugEffect.CurrentTechnique.Passes[0].Apply();
 
         GraphicsDevice.SetVertexBuffer(_dbgvertexBuffer);
         GraphicsDevice.Indices = _dbgindexBuffer;
         GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
-        
-        
+
+
         base.Draw(gameTime);
     }
 }
