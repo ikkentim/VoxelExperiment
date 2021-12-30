@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MyGame;
+namespace MyGame.World;
 
 [Flags]
 public enum Face

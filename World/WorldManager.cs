@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
-namespace MyGame;
+namespace MyGame.World;
 
 public class WorldManager
 {
@@ -52,35 +49,5 @@ public class WorldManager
     public void UpdateLoadedChunks()
     {
         //
-    }
-
-    public void RenderVisibleChunks(BasicEffect basicEffect, GraphicsDevice graphicsDevice)
-    {
-        // TODO: To world renderer
-        foreach (var chunk in _loadedChunks)
-        {
-            for (var x = 0; x < WorldChunk.ChunkSize; x++)
-            {
-                for (var y = 0; y < WorldChunk.ChunkSize; y++)
-                {
-                    for (var z = 0; z < WorldChunk.ChunkSize; z++)
-                    {
-                        var block = chunk.GetBlock(new IntVector3(x, y, z));
-                        var pos = chunk.GetBlockPosition(new IntVector3(x, y, z));
-
-                        if (block.Kind != null)
-                        {
-                            basicEffect.World = Matrix.CreateTranslation(pos);
-
-                            foreach (var pass in basicEffect.CurrentTechnique.Passes)
-                            {
-                                pass.Apply();
-                                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 12);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

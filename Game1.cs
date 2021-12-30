@@ -1,6 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MyGame.Control;
+using MyGame.Helpers;
+using MyGame.Overlay;
+using MyGame.Rendering;
+using MyGame.World;
 
 namespace MyGame;
 

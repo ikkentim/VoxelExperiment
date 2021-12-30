@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace MyGame;
+namespace MyGame.World;
 
 public class WorldChunkRenderer
 {

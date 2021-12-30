@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace MyGame;
+namespace MyGame.Control;
 
 public class KeyboardInput
 {

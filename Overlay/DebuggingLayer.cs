@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.Rendering;
 
-namespace MyGame;
+namespace MyGame.Overlay;
 
 public class DebuggingLayer
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace MyGame;
+namespace MyGame.Helpers;
 
 public static class GameTimeExtensions
 {

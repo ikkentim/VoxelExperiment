@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MyGame.Rendering;
 
-namespace MyGame;
+namespace MyGame.Control;
 
 public class MouseInput
 {

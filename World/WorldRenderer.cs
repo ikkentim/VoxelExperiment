@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.Rendering;
 
-namespace MyGame;
+namespace MyGame.World;
 
 public class WorldRenderer
 {
