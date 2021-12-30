@@ -37,7 +37,7 @@ public class PlayerController
 
     private void UpdateWalking(float deltaTime)
     {
-        const float movementSpeed = 10f;
+        const float movementSpeed = 5f;
         
         var kbVec = _keyboardInput.GetArrowsInput();
         kbVec *= deltaTime * movementSpeed;
@@ -51,7 +51,7 @@ public class PlayerController
 
     private void UpdateLooking(float deltaTime)
     {
-        const float rotationSpeed = 0.01f;
+        const float rotationSpeed = 0.05f;
         
         var input = _mouseInput.GetInput();
 

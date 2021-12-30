@@ -6,6 +6,7 @@ namespace MyGame;
 
 public class Game1 : Game
 {
+    private Texture2D _testTexture;
     private readonly Camera _camera = new();
     private readonly GraphicsDeviceManager _graphics;
     private readonly PlayerController _playerController;
@@ -54,6 +55,10 @@ public class Game1 : Game
         _basicEffect = new BasicEffect(GraphicsDevice);
         _debugEffect = new BasicEffect(GraphicsDevice);
 
+        _testTexture = Content.Load<Texture2D>("checkered");
+        _basicEffect.Texture = _testTexture;
+        _basicEffect.TextureEnabled = true;
+
         /*    6 ___________7
          *     /|         /|
          *  4 / |        / |
@@ -68,14 +73,14 @@ public class Game1 : Game
 
         var vertices = new[]
         {
-            new VertexPositionColor(new Vector3(0, 0, 0), Color.Red),
-            new VertexPositionColor(new Vector3(1, 0, 0), Color.Green),
-            new VertexPositionColor(new Vector3(0, 0, 1), Color.Blue),
-            new VertexPositionColor(new Vector3(1, 0, 1), Color.Red),
-            new VertexPositionColor(new Vector3(0, 1, 0), Color.Green),
-            new VertexPositionColor(new Vector3(1, 1, 0), Color.Red),
-            new VertexPositionColor(new Vector3(0, 1, 1), Color.Blue),
-            new VertexPositionColor(new Vector3(1, 1, 1), Color.Red)
+            new VertexPositionTexture(new Vector3(0, 0, 0), new Vector2(0, 0)),
+            new VertexPositionTexture(new Vector3(1, 0, 0), new Vector2(1, 0)),
+            new VertexPositionTexture(new Vector3(0, 0, 1), new Vector2(0, 1)),
+            new VertexPositionTexture(new Vector3(1, 0, 1), new Vector2(1, 1)),
+            new VertexPositionTexture(new Vector3(0, 1, 0), new Vector2(0, 0)),
+            new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 0)),
+            new VertexPositionTexture(new Vector3(0, 1, 1), new Vector2(0, 1)),
+            new VertexPositionTexture(new Vector3(1, 1, 1), new Vector2(1, 1)),
         };
 
         var indices = new short[]
@@ -94,9 +99,17 @@ public class Game1 : Game
             3, 7, 5
         };
 
-        var vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 8, BufferUsage.WriteOnly);
-        var indexBuffer = new IndexBuffer(GraphicsDevice, typeof(short), indices.Length, BufferUsage.WriteOnly);
+        _vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionTexture), 8, BufferUsage.WriteOnly);
+        _indexBuffer = new IndexBuffer(GraphicsDevice, typeof(short), indices.Length, BufferUsage.WriteOnly);
+        
+        _vertexBuffer.SetData(vertices);
+        _indexBuffer.SetData(indices);
 
+        InitializeDebugging();
+    }
+
+    private void InitializeDebugging()
+    {
         _dbgVertices = new[]
         {
             new VertexPositionColor(Vector3.Zero, Color.Red),
@@ -112,12 +125,6 @@ public class Game1 : Game
 
         _dbgvertexBuffer.SetData(_dbgVertices);
         _dbgindexBuffer.SetData(dbgIndices);
-
-        vertexBuffer.SetData(vertices);
-        indexBuffer.SetData(indices);
-
-        _vertexBuffer = vertexBuffer;
-        _indexBuffer = indexBuffer;
     }
 
     protected override void Update(GameTime gameTime)
@@ -172,15 +179,19 @@ public class Game1 : Game
 
         _basicEffect!.View = _camera.ViewMatrix;
         _basicEffect.Projection = GlobalGameContext.Current.Projection;
-        _basicEffect.VertexColorEnabled = true;
-
+        
         GraphicsDevice.SetVertexBuffer(_vertexBuffer);
         GraphicsDevice.Indices = _indexBuffer;
 
         _worldManager.RenderVisibleChunks(_basicEffect, _camera, GraphicsDevice);
 
+        DebugDraw();
 
-        // Debug draw
+        base.Draw(gameTime);
+    }
+
+    private void DebugDraw()
+    {
         // axis lines in world space
         _debugEffect!.View = _camera.ViewMatrix;
         _debugEffect.Projection = GlobalGameContext.Current.Projection;
@@ -203,8 +214,5 @@ public class Game1 : Game
         GraphicsDevice.SetVertexBuffer(_dbgvertexBuffer);
         GraphicsDevice.Indices = _dbgindexBuffer;
         GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
-
-
-        base.Draw(gameTime);
     }
 }
