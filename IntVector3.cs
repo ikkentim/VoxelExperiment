@@ -5,11 +5,11 @@ using Microsoft.Xna.Framework;
 namespace MyGame;
 
 [DebuggerDisplay("{DebugDisplayString,nq}")]
-public readonly struct IntVector3 : IEquatable<IntVector3>
+public struct IntVector3 : IEquatable<IntVector3>
 {
-    public readonly int X;
-    public readonly int Y;
-    public readonly int Z;
+    public int X;
+    public int Y;
+    public int Z;
     
     public IntVector3(int x, int y, int z)
     {
@@ -20,6 +20,9 @@ public readonly struct IntVector3 : IEquatable<IntVector3>
 
     public static readonly IntVector3 Zero = new(0, 0, 0);
     public static readonly IntVector3 One = new(1, 1, 1);
+    public static readonly IntVector3 UnitX = new(1, 0, 0);
+    public static readonly IntVector3 UnitY = new(0, 1, 0);
+    public static readonly IntVector3 UnitZ = new(0, 0, 1);
 
     internal string DebugDisplayString => $"({X}, {Y}, {Z})";
 

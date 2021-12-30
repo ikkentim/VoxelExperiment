@@ -12,7 +12,7 @@ public class DebuggingLayer
     private readonly IndexBuffer _indexBuffer;
     private readonly VertexBuffer _vertexBuffer;
     private SpriteFont? _font;
-    private SpriteBatch _spriteBatch;
+    private readonly SpriteBatch _spriteBatch;
 
     public DebuggingLayer(GraphicsDevice graphicsDevice, Camera camera)
     {

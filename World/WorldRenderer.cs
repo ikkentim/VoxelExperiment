@@ -30,6 +30,8 @@ public class WorldRenderer
     public void ChunkLoaded(WorldChunk chunk)
     {
         chunk.Renderer = new WorldChunkRenderer(chunk, _rendererResources);
+
+        chunk.Renderer.Initialize();
     }
 
     public void Draw(GraphicsDevice graphicsDevice)
