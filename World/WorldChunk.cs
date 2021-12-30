@@ -8,6 +8,8 @@ public class WorldChunk
     public IntVector3 Position { get; init; }
     public BlockData[,,] Blocks { get; } = new BlockData[ChunkSize,ChunkSize,ChunkSize];
 
+    public WorldChunkRenderer? Renderer { get; set; }
+
     private void AssertPositionWithinBounds(IntVector3 localPos)
     {
         if (localPos.X < 0 || localPos.Y < 0 || localPos.Z < 0 || localPos.X >= ChunkSize || localPos.Y >= ChunkSize || localPos.Z >= ChunkSize)
@@ -26,6 +28,8 @@ public class WorldChunk
     {
         AssertPositionWithinBounds(localPos);
         Blocks[localPos.X, localPos.Y, localPos.Z] = block;
+
+        Renderer?.BlockUpdated(localPos);
     }
 
     public BlockData GetBlock(IntVector3 localPos)

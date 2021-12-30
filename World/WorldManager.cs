@@ -10,9 +10,16 @@ public class WorldManager
 {
     private readonly List<WorldChunk> _loadedChunks = new();
 
+    public WorldRenderer? Renderer { get; set; }
+
     public WorldChunk? GetChunk(IntVector3 position)
     {
         return _loadedChunks.FirstOrDefault(x => x.Position == position);
+    }
+
+    public IEnumerable<WorldChunk> GetChunks()
+    {
+        return _loadedChunks;
     }
 
     private WorldChunk GenerateTestChunk()
@@ -23,18 +30,17 @@ public class WorldManager
         };
 
         var t = new TestBlock();
-        chunk.SetBlock(new IntVector3(1, 0, 1), new BlockData
-        {
-            Kind = t
-        });
-        /*chunk.SetBlock(new IntVector3(5, 4, 4), new BlockData
-        {
-            Kind = t
-        });
-        chunk.SetBlock(new IntVector3(5, 3, 4), new BlockData
-        {
-            Kind = t
-        });*/
+
+        for (var x = 0; x < 16; x++)
+        for (var y = 0; y < 02; y++)
+        for (var z = 0; z < 16; z++)
+            chunk.SetBlock(new IntVector3(x, y, z), new BlockData
+            {
+                Kind = t
+            });
+
+
+        Renderer?.ChunkLoaded(chunk);
 
         return chunk;
     }
@@ -48,7 +54,7 @@ public class WorldManager
         //
     }
 
-    public void RenderVisibleChunks(BasicEffect basicEffect, Camera camera, GraphicsDevice graphicsDevice)
+    public void RenderVisibleChunks(BasicEffect basicEffect, GraphicsDevice graphicsDevice)
     {
         // TODO: To world renderer
         foreach (var chunk in _loadedChunks)

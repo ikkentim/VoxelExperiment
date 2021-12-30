@@ -22,7 +22,7 @@ public class GlobalGameContext
     public Matrix Projection => Matrix.CreatePerspectiveFieldOfView(
         MathHelper.PiOver4, // 90 fov
         Window.ClientBounds.Width / (float)Window.ClientBounds.Height,
-        1,
+        0.1f,
         100);
 
     public static void Initialize(Game1 game)
