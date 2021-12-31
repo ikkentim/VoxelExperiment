@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Rendering;
 
-namespace MyGame.World;
+namespace MyGame.World.Rendering;
 
 public class WorldRenderer
 {
@@ -29,7 +29,7 @@ public class WorldRenderer
 
     public void ChunkLoaded(WorldChunk chunk)
     {
-        chunk.Renderer = new WorldChunkRenderer(chunk, _rendererResources);
+        chunk.Renderer = new NewWorldChunkRenderer(chunk, _rendererResources);
 
         chunk.Renderer.Initialize();
     }

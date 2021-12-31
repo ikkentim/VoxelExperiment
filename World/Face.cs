@@ -3,8 +3,9 @@
 namespace MyGame.World;
 
 [Flags]
-public enum Face
+public enum Face : byte
 {
+    None = 0,
     /// <summary>
     /// Y+, Up
     /// </summary>

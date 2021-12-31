@@ -40,14 +40,18 @@ public struct IntVector3 : IEquatable<IntVector3>
     {
         return HashCode.Combine(X, Y, Z);
     }
-    
+
+    public static Vector3 operator *(IntVector3 vec, float scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
     public static IntVector3 operator *(IntVector3 vec, int scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
 
+    public static Vector3 operator /(IntVector3 vec, float scalar) => new(vec.X / scalar, vec.Y / scalar, vec.Z / scalar);
     public static IntVector3 operator /(IntVector3 vec, int scalar) => new(vec.X / scalar, vec.Y / scalar, vec.Z / scalar);
 
     public static IntVector3 operator +(IntVector3 lhs, IntVector3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
-
+    
     public static IntVector3 operator -(IntVector3 lhs, IntVector3 rhs) => new(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+
+    public static IntVector3 operator -(IntVector3 vec) => new(-vec.X, -vec.Y, -vec.Z);
 
     public static implicit operator Vector3(IntVector3 vec) => new(vec.X, vec.Y, vec.Z);
     public static bool operator ==(IntVector3 lhs, IntVector3 rhs) => lhs.Equals(rhs);

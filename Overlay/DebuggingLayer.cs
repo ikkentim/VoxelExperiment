@@ -7,6 +7,8 @@ namespace MyGame.Overlay;
 
 public class DebuggingLayer
 {
+    private const bool DrawWorldAxis = true;
+    private const bool DrawCameraAxis = true;
     private readonly Camera _camera;
     private readonly BasicEffect _debugEffect;
     private readonly IndexBuffer _indexBuffer;
@@ -54,28 +56,35 @@ public class DebuggingLayer
         _debugEffect!.Projection = GlobalGameContext.Current.Projection;
 
         // axis lines in world space
-        _debugEffect.View = _camera.ViewMatrix;
-        _debugEffect.World = Matrix.Identity;
-        _debugEffect.VertexColorEnabled = true;
-        _debugEffect.CurrentTechnique.Passes[0].Apply();
+        if (DrawWorldAxis)
+        {
+            _debugEffect.View = _camera.ViewMatrix;
+            _debugEffect.World = Matrix.Identity;
+            _debugEffect.VertexColorEnabled = true;
+            _debugEffect.CurrentTechnique.Passes[0].Apply();
 
-        graphicsDevice.SetVertexBuffer(_vertexBuffer);
-        graphicsDevice.Indices = _indexBuffer;
-        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
+            graphicsDevice.SetVertexBuffer(_vertexBuffer);
+            graphicsDevice.Indices = _indexBuffer;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
+        }
 
         // axis lines in cam space
-        _debugEffect.View = Matrix.CreateLookAt(_camera.Transform.Backward * 0.2f, Vector3.Zero, _camera.Transform.Up);
-        _debugEffect.World = Matrix.CreateScale(0.01f);
-        _debugEffect.CurrentTechnique.Passes[0].Apply();
-        
-        graphicsDevice.SetVertexBuffer(_vertexBuffer);
-        graphicsDevice.Indices = _indexBuffer;
-        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
-        
+        if (DrawCameraAxis)
+        {
+            _debugEffect.View = Matrix.CreateLookAt(_camera.Transform.Backward * 0.2f, Vector3.Zero, _camera.Transform.Up);
+            _debugEffect.World = Matrix.CreateScale(0.01f);
+            _debugEffect.CurrentTechnique.Passes[0].Apply();
+
+            graphicsDevice.SetVertexBuffer(_vertexBuffer);
+            graphicsDevice.Indices = _indexBuffer;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, 3);
+        }
+
+        // draw fps
         _time += (deltaTime - _time) / 5;
-        
         _spriteBatch.Begin();
-        _spriteBatch.DrawString(_font, $"FPS: {(1 / _time)}", new Vector2(10, 10), Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+        _spriteBatch.DrawString(_font, $"FPS: {(1 / _time)}", new Vector2(10, 10), Color.White, 0, Vector2.Zero, Vector2.One,
+            SpriteEffects.None, 0);
         _spriteBatch.End();
     }
 

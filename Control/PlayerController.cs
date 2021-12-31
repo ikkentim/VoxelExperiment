@@ -11,8 +11,8 @@ public class PlayerController
     private Vector2 _look = new(-MathHelper.PiOver2, 0);
     private Vector3 _position = Vector3.Zero;
 
-    private MouseInput _mouseInput = new();
-    private KeyboardInput _keyboardInput = new();
+    private readonly MouseInput _mouseInput = new();
+    private readonly KeyboardInput _keyboardInput = new();
 
     public PlayerController(Camera camera)
     {

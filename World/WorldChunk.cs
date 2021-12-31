@@ -1,14 +1,23 @@
 ﻿using System;
+using MyGame.World.Rendering;
 
 namespace MyGame.World;
 
 public class WorldChunk
 {
     public const int ChunkSize = 16;
-    public IntVector3 Position { get; init; }
+    
+    public IntVector3 ChunkPosition { get; }
+    public IntVector3 WorldPosition => ChunkPosition * ChunkSize;
+
     public BlockData[,,] Blocks { get; } = new BlockData[ChunkSize,ChunkSize,ChunkSize];
 
-    public WorldChunkRenderer? Renderer { get; set; }
+    public IWorldChunkRenderer? Renderer { get; set; }
+    
+    public WorldChunk(IntVector3 chunkPosition)
+    {
+        ChunkPosition = chunkPosition;
+    }
 
     private void AssertPositionWithinBounds(IntVector3 localPos)
     {
@@ -18,10 +27,16 @@ public class WorldChunk
         }
     }
 
+    public WorldChunk GetNeighbor(Face direction)
+    {
+        // test world has only 1 chunk.
+        return null;
+    }
+    
     public IntVector3 GetBlockPosition(IntVector3 localPos)
     {
         AssertPositionWithinBounds(localPos);
-        return Position * ChunkSize + localPos;
+        return WorldPosition + localPos;
     }
 
     public void SetBlock(IntVector3 localPos, BlockData block)
@@ -32,9 +47,9 @@ public class WorldChunk
         Renderer?.BlockUpdated(localPos);
     }
 
-    public BlockData GetBlock(IntVector3 localPos)
+    public ref BlockData GetBlock(IntVector3 localPos)
     {
         AssertPositionWithinBounds(localPos);
-        return Blocks[localPos.X, localPos.Y, localPos.Z];
+        return ref Blocks[localPos.X, localPos.Y, localPos.Z];
     }
 }
