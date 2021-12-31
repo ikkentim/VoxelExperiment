@@ -29,7 +29,7 @@ public class WorldRenderer
 
     public void ChunkLoaded(WorldChunk chunk)
     {
-        chunk.Renderer = new NewWorldChunkRenderer(chunk, _rendererResources);
+        chunk.Renderer = new WorldChunkRendererByGreedyMesh(chunk, _rendererResources);
 
         chunk.Renderer.Initialize();
     }

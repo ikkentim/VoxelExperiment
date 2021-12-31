@@ -17,7 +17,7 @@ public static class Faces
         -IntVector3.UnitZ,
     };
 
-    public static Face[] FaceValues { get; } = new[]
+    public static Face[] AllFaces { get; } = new[]
     {
         Face.East,
         Face.Top,

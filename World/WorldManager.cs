@@ -59,7 +59,6 @@ public class WorldManager
                 Kind = t
             });
         
-        Renderer?.ChunkLoaded(chunk);
 
         return chunk;
     }
@@ -74,7 +73,8 @@ public class WorldManager
         for (var y = 0; y < 02; y++)
         for (var z = 0; z < 16; z++)
             chunk.Blocks[x, y, z].Kind?.OnCreated(ref chunk.Blocks[x, y, z], new IntVector3(x, y, z), this);
-
+        
+        Renderer?.ChunkLoaded(chunk);
     }
 
     public void UpdateLoadedChunks()

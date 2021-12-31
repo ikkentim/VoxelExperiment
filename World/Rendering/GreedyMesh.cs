@@ -2,44 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Accessibility;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace MyGame.World.Rendering;
-
-public class NewWorldChunkRenderer : IWorldChunkRenderer
-{
-    private readonly WorldChunk _chunk;
-    private readonly WorldChunkRendererResources _rendererResources;
-
-    public NewWorldChunkRenderer(WorldChunk chunk, WorldChunkRendererResources rendererResources)
-    {
-        _chunk = chunk;
-        _rendererResources = rendererResources;
-    }
-
-    private List<GreedyMesh> _layers = new();
-
-    public void Initialize()
-    {
-        _layers.Add(new GreedyMesh(_chunk, _rendererResources, Face.West, 0));
-    }
-
-    public void BlockUpdated(IntVector3 localPosition)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Draw(GraphicsDevice graphicsDevice)
-    {
-        foreach (var mesh in _layers)
-        {
-            mesh.Draw(graphicsDevice);
-        }
-    }
-}
 
 public class GreedyMesh
 {
@@ -85,9 +51,17 @@ public class GreedyMesh
 
     private readonly List<MeshData> _meshes = new();
 
+    public int MeshCount => _meshes.Count;
+
+    private bool BlockHasVisibleFace(int i, int j)
+    {
+        var block = GetBlock(i, j);
+
+        return block.Kind != null && block.VisibleFaces.HasFlag(_face);
+    }
     private void GreedyFrom(ref int i, ref int j, ref BoolArray16X16 visited)
     {
-        if (GetBlock(i, j).Kind == null)
+        if (!BlockHasVisibleFace(i, j))
         {
             // nothing to see here
             visited[i + j * WorldChunk.ChunkSize] = true;
@@ -96,9 +70,9 @@ public class GreedyMesh
 
         // Expand towards i+
         int maxI = i;
-        for (var i2 = i; i2 < WorldChunk.ChunkSize; i2++)
+        for (var i2 = i + 1; i2 < WorldChunk.ChunkSize; i2++)
         {
-            if (GetBlock(i2, j).Kind == null)
+            if (visited[i2 + j * WorldChunk.ChunkSize] || !BlockHasVisibleFace(i2, j))
             {
                 // it's air, no further
                 visited[i2 + j * WorldChunk.ChunkSize] = true;
@@ -112,13 +86,13 @@ public class GreedyMesh
 
         // Expand towards j+
         var maxJ = j;
-        for (var j2 = j; j2 < WorldChunk.ChunkSize; j2++)
+        for (var j2 = j + 1; j2 < WorldChunk.ChunkSize; j2++)
         {
             var bad = false;
             // got to check every block between (i - maxI) on column j2
             for (var i2 = i; i2 <= maxI; i2++)
             {
-                if (GetBlock(i2, j2).Kind == null)
+                if (visited[i2 + j2 * WorldChunk.ChunkSize] || !BlockHasVisibleFace(i2, j2))
                 {
                     // it's air, no further
                     visited[i2 + j2 * WorldChunk.ChunkSize] = true;
@@ -150,6 +124,7 @@ public class GreedyMesh
             meshPos += _normal;
         }
 
+
         var size = Vector2.One + new Vector2(maxI - i, maxJ - j);
         
         _meshes.Add(new MeshData
@@ -157,23 +132,6 @@ public class GreedyMesh
             Position = _chunk.WorldPosition + meshPos,
             Size = size
         });
-
-        // optimize outer loop
-        if (maxJ == WorldChunk.ChunkSize - 1 && j == 0)
-        {
-            i = maxI;
-        }
-
-        j = maxJ;
-    }
-
-    private static Vector3 Absolute(Vector3 normal)
-    {
-        return new Vector3(
-            MathF.Abs(normal.X),
-            MathF.Abs(normal.Y),
-            MathF.Abs(normal.Z)
-        );
     }
 
     private IntVector3 GetLocalBlockPosition(int i, int j)
@@ -189,6 +147,23 @@ public class GreedyMesh
             case Face.West:
             case Face.East:
                 return new IntVector3(_index, i, j);
+            default:
+                throw new InvalidOperationException();
+        }
+    }
+    private IntVector3 GetLocalScale(int i, int j)
+    {
+        switch (_face)
+        {
+            case Face.Top:
+            case Face.Bottom:
+                return new IntVector3(i, 0, j);
+            case Face.South:
+            case Face.North:
+                return new IntVector3(i, j, 0);
+            case Face.West:
+            case Face.East:
+                return new IntVector3(0, i, j);
             default:
                 throw new InvalidOperationException();
         }
@@ -211,6 +186,17 @@ public class GreedyMesh
         new(new Vector3(0, 1, 0)),
         new(new Vector3(1, 1, 0))
     };
+    
+    private static readonly short[] FaceIndices = {
+        0, 1, 2,
+        1, 3, 2,
+    };
+    private readonly VertexPositionTexture[] _faceVertices = {
+        new(new Vector3(0, 0, 0), new Vector2(0, 0)),
+        new(new Vector3(1, 0, 0), new Vector2(1, 0)),
+        new(new Vector3(0, 1, 0), new Vector2(0, 1)),
+        new(new Vector3(1, 1, 0), new Vector2(1, 1)),
+    };
 
     private static readonly short[] FaceIndicesLine = {
         2, 0, 1, 3, 2, 1
@@ -223,10 +209,24 @@ public class GreedyMesh
 
         foreach (var mesh in _meshes)
         {
-            var matrix = Matrix.Identity;
-            
-            basicEffect.World = matrix * Matrix.CreateTranslation(mesh.Position);
+            graphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
 
+
+            basicEffect.World = GetMatrixForFaceMesh(mesh.Position, mesh.Size);
+
+            _faceVertices[1].TextureCoordinate.X = mesh.Size.X;
+            _faceVertices[2].TextureCoordinate.Y = mesh.Size.Y;
+            _faceVertices[3].TextureCoordinate.X = mesh.Size.X;
+            _faceVertices[3].TextureCoordinate.Y = mesh.Size.Y;
+
+            basicEffect.TextureEnabled = true;
+            foreach (var pass in basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _faceVertices, 0, _faceVertices.Length, FaceIndices, 0, 2);
+            }
+
+            basicEffect.TextureEnabled = false;
             foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
@@ -234,57 +234,33 @@ public class GreedyMesh
             }
         }
     }
-}
 
-public struct BoolArray16X16
-{
-    private ulong _a;
-    private ulong _b;
-    private ulong _c;
-    private ulong _d;
-
-    public bool this[int index]
+    private Matrix GetMatrixForFaceMesh(Vector3 meshPosition, Vector2 scale)
     {
-        get => Get(index);
-        set => Set(index, value);
-    }
+        var blockFaceNormal = _normal;
 
-    public bool Get(int index)
-    {
-        if (index < 0 || index >= 256)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        var rem = index % 4;
-        switch (index / 4)
+        // around origin of mesh
+        var world = Matrix.CreateTranslation(-.5f, -.5f, 0);
+        
+        // rotate to normal of block face
+        if (blockFaceNormal.Z == 0)
         {
-            case 0: return ((_a >> rem) & 1) == 1;
-            case 1: return ((_b >> rem) & 1) == 1;
-            case 2: return ((_c >> rem) & 1) == 1;
-            default: return ((_d >> rem) & 1) == 1;
+            var axis = new Vector3(blockFaceNormal.Y, -blockFaceNormal.X, 0);
+
+            world *= Matrix.CreateFromAxisAngle(axis, MathHelper.PiOver2);
         }
-    }
-
-    public void Set(int index, bool value)
-    {
-        if (index < 0 || index >= 256)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        var rem = index % 4;
-        switch (index / 4)
+        else if (blockFaceNormal.Z == 1)
         {
-            case 0: 
-                _a &= (ulong)(value ? 1 << rem : 0);
-                break;
-            case 1:
-                _b &= (ulong)(value ? 1 << rem : 0);
-                break;
-            case 2: 
-                _c &= (ulong)(value ? 1 << rem : 0);
-                break;
-            default: 
-                _d &= (ulong)(value ? 1 << rem : 0);
-                break;
+            world *= Matrix.CreateRotationY(MathHelper.Pi);
         }
+
+        // scale and translate to position
+        var scaleOnPlane = GetLocalScale((int)scale.X, (int)scale.Y); // shouldn't have to cast...
+        var tr = scaleOnPlane * 0.5f;
+        world *= Matrix.CreateScale(scaleOnPlane);
+        world *= Matrix.CreateTranslation(tr);
+        world *= Matrix.CreateTranslation(meshPosition);
+        
+        return world;
     }
-    
 }

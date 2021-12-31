@@ -8,7 +8,7 @@ public abstract class BlockBase
     {
         var faces = Face.None;
 
-        foreach (var face in Faces.FaceValues)
+        foreach (var face in Faces.AllFaces)
         {
             var normal = Faces.GetNormal(face);
 

@@ -122,18 +122,15 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         
-        // _worldRenderer!.Draw(GraphicsDevice);
+        _worldRenderer!.Draw(GraphicsDevice);
         
-        
-        DrawTestThings();
-
-
         // Always draw 2D elements last
         _debuggingLayer!.Draw(gameTime.GetDeltaTime(), GraphicsDevice);
 
         base.Draw(gameTime);
     }
 
+    #region TestingThings
 
     private Matrix GetTestWorldMatrixForBlockFace(IntVector3 blockPosition, IntVector3 blockFaceNormal)
     {
@@ -199,4 +196,6 @@ public class Game1 : Game
     private static readonly short[] FaceIndicesLine = {
         2, 0, 1, 3, 2, 1
     };
+
+    #endregion
 }
