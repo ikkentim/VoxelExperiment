@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.World.Blocks;
 
-namespace MyGame.World.Rendering;
+namespace MyGame.World.Rendering.Experiments;
 
 public class SimplePerSquareMesh
 {

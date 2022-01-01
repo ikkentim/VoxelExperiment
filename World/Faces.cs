@@ -17,7 +17,7 @@ public static class Faces
         -IntVector3.UnitZ,
     };
 
-    public static Face[] AllFaces { get; } = new[]
+    public static Face[] AllFaces { get; } =
     {
         Face.East,
         Face.Top,
@@ -26,6 +26,14 @@ public static class Faces
         Face.Bottom,
         Face.North
     };
+    
+    public static Face GetOpposite(Face face)
+    {
+        if ((face & PositiveFaces) != Face.None)
+            return (Face)((int)face << 1);
+
+        return (Face)((int)face >> 1);
+    }
 
     public static IntVector3 GetNormal(Face face)
     {

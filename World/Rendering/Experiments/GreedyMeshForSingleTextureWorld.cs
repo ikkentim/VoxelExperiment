@@ -6,9 +6,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.World.Blocks;
 
-namespace MyGame.World.Rendering;
+namespace MyGame.World.Rendering.Experiments;
 
-public class GreedyMesh
+public class GreedyMeshForSingleTextureWorld
 {
     private readonly WorldChunk _chunk;
     private readonly WorldChunkRendererResources _resources;
@@ -16,7 +16,7 @@ public class GreedyMesh
     private readonly IntVector3 _normal;
     private readonly int _index;
     
-    public GreedyMesh(WorldChunk chunk, WorldChunkRendererResources resources, Face face, int index)
+    public GreedyMeshForSingleTextureWorld(WorldChunk chunk, WorldChunkRendererResources resources, Face face, int index)
     {
         if (!Enum.IsDefined(typeof(Face), face) || face == Face.None) throw new InvalidEnumArgumentException(nameof(face), (int)face, typeof(Face));
 
@@ -36,7 +36,7 @@ public class GreedyMesh
         {
             for (var j = 0; j < WorldChunk.ChunkSize; j++)
             {
-                if (visited[i + j * WorldChunk.ChunkSize])
+                if (visited[i, j])
                     continue;
 
                 GreedyFrom(ref i, ref j, ref visited);
@@ -65,7 +65,7 @@ public class GreedyMesh
         if (!BlockHasVisibleFace(i, j))
         {
             // nothing to see here
-            visited[i + j * WorldChunk.ChunkSize] = true;
+            visited[i, j] = true;
             return;
         }
 
@@ -73,10 +73,10 @@ public class GreedyMesh
         int maxI = i;
         for (var i2 = i + 1; i2 < WorldChunk.ChunkSize; i2++)
         {
-            if (visited[i2 + j * WorldChunk.ChunkSize] || !BlockHasVisibleFace(i2, j))
+            if (visited[i2, j] || !BlockHasVisibleFace(i2, j))
             {
                 // it's air, no further
-                visited[i2 + j * WorldChunk.ChunkSize] = true;
+                visited[i2, j] = true;
                 break;
             }
             else
@@ -93,10 +93,10 @@ public class GreedyMesh
             // got to check every block between (i - maxI) on column j2
             for (var i2 = i; i2 <= maxI; i2++)
             {
-                if (visited[i2 + j2 * WorldChunk.ChunkSize] || !BlockHasVisibleFace(i2, j2))
+                if (visited[i2, j2] || !BlockHasVisibleFace(i2, j2))
                 {
                     // it's air, no further
-                    visited[i2 + j2 * WorldChunk.ChunkSize] = true;
+                    visited[i2, j2] = true;
                     bad = true;
                     break;
                 }
@@ -115,7 +115,7 @@ public class GreedyMesh
         // Visit everything
         for(var i2 = i; i2 <= maxI; i2++)
         for (var j2 = j; j2 <= maxJ; j2++)
-            visited[i2 + j2 * WorldChunk.ChunkSize] = true;
+            visited[i2, j2] = true;
 
         // add mesh
         var meshPos = GetLocalBlockPosition(i, j);
@@ -211,8 +211,7 @@ public class GreedyMesh
         foreach (var mesh in _meshes)
         {
             graphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
-
-
+            
             basicEffect.World = GetMatrixForFaceMesh(mesh.Position, mesh.Size);
 
             _faceVertices[1].TextureCoordinate.X = mesh.Size.X;

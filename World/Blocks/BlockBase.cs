@@ -1,13 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
+using MyGame.World.Blocks.BlockTypes;
 
 namespace MyGame.World.Blocks;
 
 public abstract class BlockBase
 {
+    private const string DefaultTexture = "notex";
+
     public virtual TextureReference GetTexture() =>
         new()
         {
-            Name = "notex",
+            Name = DefaultTexture,
             Uv1 = Vector2.Zero,
             Uv2 = Vector2.One
         };
@@ -21,17 +24,10 @@ public abstract class BlockBase
             var normal = Faces.GetNormal(face);
 
             var neighbor = position + normal;
-
-            if (!world.IsInBounds(neighbor))
+            
+            if (world.GetBlock(neighbor).Kind is null or AirBlock)
             {
                 faces |= face;
-            }
-            else
-            {
-                if (world.GetBlock(neighbor).Kind == null) // air
-                {
-                    faces |= face;
-                }
             }
         }
 
@@ -40,6 +36,7 @@ public abstract class BlockBase
 
     public virtual void OnNeighborUpdated(ref BlockData block, Face direction, BlockData neighbor, WorldManager world)
     {
-        // todo: update
+        var flag = neighbor.Kind is null or AirBlock ? direction : Face.None;
+        block.VisibleFaces = (block.VisibleFaces & ~direction) | flag;
     }
 }

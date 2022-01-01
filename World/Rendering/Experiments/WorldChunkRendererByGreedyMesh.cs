@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace MyGame.World.Rendering;
+namespace MyGame.World.Rendering.Experiments;
 
 public class WorldChunkRendererByGreedyMesh : IWorldChunkRenderer
 {
@@ -15,7 +15,7 @@ public class WorldChunkRendererByGreedyMesh : IWorldChunkRenderer
         _rendererResources = rendererResources;
     }
 
-    private List<GreedyMesh> _layers = new();
+    private List<GreedyMeshForSingleTextureWorld> _layers = new();
 
     public void Initialize()
     {
@@ -23,7 +23,7 @@ public class WorldChunkRendererByGreedyMesh : IWorldChunkRenderer
         {
             foreach (var face in Faces.AllFaces)
             {
-                var mesh = new GreedyMesh(_chunk, _rendererResources, face, i);
+                var mesh = new GreedyMeshForSingleTextureWorld(_chunk, _rendererResources, face, i);
                 mesh.Build();
                 _layers.Add(mesh);
             }
@@ -32,7 +32,6 @@ public class WorldChunkRendererByGreedyMesh : IWorldChunkRenderer
 
     public void BlockUpdated(IntVector3 localPosition)
     {
-        throw new NotImplementedException();
     }
 
     public void Draw(GraphicsDevice graphicsDevice)

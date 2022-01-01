@@ -1,7 +1,12 @@
-﻿namespace MyGame.World.Blocks;
+﻿using System.Diagnostics;
 
+namespace MyGame.World.Blocks;
+
+[DebuggerDisplay("{DebugDisplayString,nq}")]
 public struct BlockData
 {
-    public BlockBase? Kind; // air is nulls
+    internal string DebugDisplayString => $"({Kind?.GetType().Name ?? "None"})";
+
+    public BlockBase? Kind;
     public Face VisibleFaces;
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace MyGame.World.Rendering;
+namespace MyGame.World.Rendering.Experiments;
 
 public class WorldChunkRendererBySimplePerSquareMeshes : IWorldChunkRenderer
 {

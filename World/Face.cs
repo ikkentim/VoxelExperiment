@@ -6,28 +6,34 @@ namespace MyGame.World;
 public enum Face : byte
 {
     None = 0,
-    /// <summary>
-    /// Y+, Up
-    /// </summary>
-    Top = 1,
-    /// <summary>
-    /// Y-, Down
-    /// </summary>
-    Bottom = 2,
-    /// <summary>
-    /// Z+, Backward
-    /// </summary>
-    South = 4,
-    /// <summary>
-    /// Z-, Forward
-    /// </summary>
-    North = 8,
-    /// <summary>
-    /// X- Left
-    /// </summary>
-    West = 16,
+
     /// <summary>
     /// X+, Right
     /// </summary>
-    East = 32,
+    East = 1,
+
+    /// <summary>
+    /// X- Left
+    /// </summary>
+    West = 2,
+
+    /// <summary>
+    /// Y+, Up
+    /// </summary>
+    Top = 4,
+
+    /// <summary>
+    /// Y-, Down
+    /// </summary>
+    Bottom = 8,
+
+    /// <summary>
+    /// Z+, Backward
+    /// </summary>
+    South = 16,
+
+    /// <summary>
+    /// Z-, Forward
+    /// </summary>
+    North = 32,
 }

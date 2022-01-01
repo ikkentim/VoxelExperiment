@@ -8,11 +8,17 @@ public struct BoolArray16X16
     private ulong _b;
     private ulong _c;
     private ulong _d;
-
+    
     public bool this[int index]
     {
         get => Get(index);
         set => Set(index, value);
+    }
+
+    public bool this[int x, int y]
+    {
+        get => Get(x + y * 16);
+        set => Set(x + y * 16, value);
     }
 
     public bool Get(int index)
