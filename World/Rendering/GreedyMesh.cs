@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.World.Blocks;
 
 namespace MyGame.World.Rendering;
 

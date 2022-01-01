@@ -1,9 +1,17 @@
-﻿namespace MyGame.World;
+﻿using Microsoft.Xna.Framework;
+
+namespace MyGame.World.Blocks;
 
 public abstract class BlockBase
 {
-    public int Texture { get; } // Texture index
-    
+    public virtual TextureReference GetTexture() =>
+        new()
+        {
+            Name = "notex",
+            Uv1 = Vector2.Zero,
+            Uv2 = Vector2.One
+        };
+
     public virtual void OnCreated(ref BlockData block, IntVector3 position, WorldManager world)
     {
         var faces = Face.None;

@@ -14,9 +14,10 @@ namespace MyGame;
 public class Game1 : Game
 {
     private readonly Camera _camera = new();
+    private readonly WorldManager _worldManager = new();
+    private readonly TextureProvider _textureProvider = new();
     private readonly GraphicsDeviceManager _graphics;
     private readonly PlayerController _playerController;
-    private readonly WorldManager _worldManager = new();
     private WorldRenderer? _worldRenderer;
     private DebuggingLayer? _debuggingLayer;
     private BasicEffect? _testEffect;
@@ -44,7 +45,7 @@ public class Game1 : Game
         
         _playerController.StartCaptureMouse();
         
-        _worldRenderer = new WorldRenderer(_worldManager, _camera);
+        _worldRenderer = new WorldRenderer(_worldManager, _camera, _textureProvider);
         _worldRenderer.Initialize(GraphicsDevice);
         
         // Load chunks after render is initialize so chunkrenderers are created.
@@ -67,7 +68,8 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _debuggingLayer!.LoadContent(Content);
-        _worldRenderer!.LoadContent(Content);
+
+        _textureProvider.LoadContent(Content);
     }
     
     protected override void Update(GameTime gameTime)

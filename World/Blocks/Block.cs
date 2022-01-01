@@ -1,4 +1,4 @@
-﻿namespace MyGame.World;
+﻿namespace MyGame.World.Blocks;
 
 public struct Block
 {
