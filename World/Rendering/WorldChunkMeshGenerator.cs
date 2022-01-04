@@ -37,18 +37,18 @@ namespace MyGame.World.Rendering
 
             var parts = new List<ChunkMesh.MeshPart>(_bufferPerAtlas.Count);
 
-            foreach (var kv in _bufferPerAtlas)
+            foreach (var (texture, buffers) in _bufferPerAtlas)
             {
-                if (!kv.Value.IsEmpty)
+                if (!buffers.IsEmpty)
                 {
-                    var (indexBuffer, vertexBuffer) = kv.Value.GetBuffers(graphicsDevice);
+                    var (indexBuffer, vertexBuffer) = buffers.GetBuffers(graphicsDevice);
 
                     parts.Add(new ChunkMesh.MeshPart
                     {
-                        Texture = kv.Key,
+                        Texture = texture,
                         IndexBuffer = indexBuffer,
                         VertexBuffer = vertexBuffer,
-                        PrimitiveCount = kv.Value.PrimitiveCount
+                        PrimitiveCount = buffers.PrimitiveCount
                     });
                 }
             }
@@ -167,6 +167,13 @@ namespace MyGame.World.Rendering
             if ((face & Faces.PositiveFaces) != Face.None)
                 vertexOrigin += Faces.GetNormal(face);
 
+            var buffer = GetBuffer(sourceTexture);
+
+            AddFaces(face, depth, i, j, maxI, maxJ, vertexOrigin, buffer);
+        }
+
+        private void AddFaces(Face face, int depth, int i, int j, int maxI, int maxJ, IntVector3 vertexOrigin, BufferGenerator<VertexPositionTexture> buffer)
+        {
             var lenI = maxI - i + 1;
             var lenJ = maxJ - j + 1;
 
@@ -174,12 +181,10 @@ namespace MyGame.World.Rendering
             {
                 return vertexOrigin + GetPosition(face, 0, x * lenI, y * lenJ);
             }
-            
-            var buffer = GetBuffer(sourceTexture);
 
-            Debug.WriteLine($"Adding face {Vx(0, 0)},{Vx(1, 0)},{Vx(0, 1)},{Vx(1, 1)} - normal {Faces.GetNormal(face)} ({face}) depth {depth} i {i}-{maxI} j {j}-{maxJ}");
+            Debug.WriteLine(
+                $"Adding face {Vx(0, 0)},{Vx(1, 0)},{Vx(0, 1)},{Vx(1, 1)} - normal {Faces.GetNormal(face)} ({face}) depth {depth} i {i}-{maxI} j {j}-{maxJ}");
 
-            // lines mode: AddFaceLines // _isLines
             if (_isLines)
             {
                 if ((face & Faces.PositiveFaces) != Face.None)
@@ -222,7 +227,7 @@ namespace MyGame.World.Rendering
             return _bufferPerAtlas.GetOrAdd(atlas);
         }
         
-        private IntVector3 GetPosition(Face face, int depth, int i, int j)
+        private static IntVector3 GetPosition(Face face, int depth, int i, int j)
         {
             var normal = Faces.GetNormal(face);
             var pos = normal * depth;
