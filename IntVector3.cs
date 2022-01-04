@@ -41,6 +41,11 @@ public struct IntVector3 : IEquatable<IntVector3>
         return HashCode.Combine(X, Y, Z);
     }
 
+    public override string ToString()
+    {
+        return $"{{X:{X} Y:{Y} Z:{Z}}}";
+    }
+
     public static Vector3 operator *(IntVector3 vec, float scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
     public static IntVector3 operator *(IntVector3 vec, int scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
 

@@ -48,9 +48,6 @@ public class Game1 : Game
         _worldRenderer = new WorldRenderer(_worldManager, _camera, _textureProvider);
         _worldRenderer.Initialize(GraphicsDevice);
         
-        // Load chunks after render is initialize so chunkrenderers are created.
-        _worldManager.LoadInitialChunks();
-
         _testEffect = new BasicEffect(GraphicsDevice);
 
         base.Initialize();
@@ -70,6 +67,9 @@ public class Game1 : Game
         _debuggingLayer!.LoadContent(Content);
 
         _textureProvider.LoadContent(Content);
+
+        // Load chunks after render is initialized so chunkrenderers are created.
+        _worldManager.LoadInitialChunks();
     }
     
     protected override void Update(GameTime gameTime)

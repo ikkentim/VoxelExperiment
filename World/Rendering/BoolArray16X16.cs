@@ -26,8 +26,8 @@ public struct BoolArray16X16
         if (index < 0 || index >= 256)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        var rem = index % 4;
-        switch (index / 4)
+        var rem = index % 64;
+        switch (index / 64)
         {
             case 0: return ((_a >> rem) & 1) == 1;
             case 1: return ((_b >> rem) & 1) == 1;
@@ -38,13 +38,14 @@ public struct BoolArray16X16
 
     public void Set(int index, bool value)
     {
+        
         if (index < 0 || index >= 256)
             throw new ArgumentOutOfRangeException(nameof(index));
+        
+        var rem = index % 64;
+        var mask = ((ulong)1 << rem);
 
-        var rem = index % 4;
-        var mask = (ulong)(1 << rem);
-
-        switch (index / 4)
+        switch (index / 64)
         {
             case 0: 
                 _a = (_a & ~mask) | (value ? mask : 0);

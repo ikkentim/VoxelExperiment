@@ -8,6 +8,7 @@ public class Camera
 
     public Camera()
     {
+        // default camera position
         Transform.WorldToLocal *= Matrix.CreateTranslation(10, 4, 4);
     }
     

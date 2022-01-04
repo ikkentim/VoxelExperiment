@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MyGame.World.Blocks;
 using MyGame.World.Blocks.BlockTypes;
@@ -40,7 +41,7 @@ public class WorldManager
         return ref blockData;
     }
 
-    public IEnumerable<WorldChunk> GetChunks()
+    public IEnumerable<WorldChunk> GetLoadedChunks()
     {
         return _loadedChunks;
     }
@@ -49,6 +50,8 @@ public class WorldManager
     {
         var t = new TestBlock();
 
+        var c = new CobbleBlock();
+
         for (var x = 0; x < WorldChunk.ChunkSize; x++)
         for (var y = 0; y < 2; y++)
         for (var z = 0; z < WorldChunk.ChunkSize; z++)
@@ -56,21 +59,27 @@ public class WorldManager
             {
                 Kind = t
             });
+
+        chunk.SetBlock(new IntVector3(7, 2, 7), new BlockData
+        {
+            Kind = c
+        });
     }
 
     public void LoadInitialChunks()
     {
         var chunk = new WorldChunk(this, new IntVector3(0, 0, 0));
         GenerateTestChunk(chunk);
-        chunk.OnLoaded();
         
         _loadedChunks.Add(chunk);
-        
+
+        chunk.OnLoaded();
+
         Renderer?.ChunkLoaded(chunk); 
     }
 
     public void UpdateLoadedChunks()
     {
-        //
+        throw new NotImplementedException();
     }
 }

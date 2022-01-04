@@ -17,7 +17,7 @@ public class WorldChunkRendererBySimplePerSquareMeshes : IWorldChunkRenderer
 
     private readonly List<SimplePerSquareMesh> _layers = new();
 
-    public void Initialize()
+    public void Initialize(GraphicsDevice graphicsDevice)
     {
         // initial mesh build
         InitializeLayers(IntVector3.UnitX);

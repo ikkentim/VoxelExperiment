@@ -69,7 +69,7 @@ public class WorldChunk
 
     public void OnLoaded()
     {
-        if (_isLoading)
+        if (!_isLoading)
             throw new InvalidOperationException();
 
         _isLoading = false;

@@ -17,7 +17,7 @@ public class WorldChunkRendererByGreedyMesh : IWorldChunkRenderer
 
     private List<GreedyMeshForSingleTextureWorld> _layers = new();
 
-    public void Initialize()
+    public void Initialize(GraphicsDevice graphicsDevice)
     {
         for (var i = 0; i < WorldChunk.ChunkSize; i++)
         {
