@@ -18,6 +18,7 @@ namespace MyGame.World.Rendering
             Load("checkered");
             Load("cobble");
             Load("notex");
+            Load("arrow");
         }
 
         public Texture2D GetTexture(string name)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -28,7 +29,7 @@ namespace MyGame.World.Rendering
             {
                 kv.Value.Clear();
             }
-
+            
             for (var depth = 0; depth < WorldChunk.ChunkSize; depth++)
                 foreach (var face in Faces.AllFaces)
                 {
@@ -176,10 +177,33 @@ namespace MyGame.World.Rendering
         {
             var lenI = maxI - i + 1;
             var lenJ = maxJ - j + 1;
-
+            
             Vector3 Vx(int x, int y)
             {
-                return vertexOrigin + GetPosition(face, 0, x * lenI, y * lenJ);
+                return face switch
+                {
+                    Face.East => vertexOrigin + new IntVector3(0, x * lenI, y * lenJ),
+                    Face.West => vertexOrigin + new IntVector3(0, x * lenI, lenJ - y * lenJ),
+                    Face.Top => vertexOrigin + new IntVector3(y * lenJ, 0, x * lenI),
+                    Face.Bottom => vertexOrigin + new IntVector3(lenJ - y * lenJ, 0, x * lenI),
+                    Face.South => vertexOrigin + new IntVector3(x * lenI, y * lenJ, 0),
+                    Face.North => vertexOrigin + new IntVector3(lenI - x * lenI, y * lenJ, 0),
+                    _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
+                };
+            }
+
+            Vector2 Uv(int x, int y)
+            {
+                return face switch
+                {
+                    Face.East => new Vector2(lenI - y * lenI, lenJ - x * lenJ),
+                    Face.West => new Vector2(lenI - y * lenI, lenJ - x * lenJ),
+                    Face.Top => new Vector2(lenJ - y * lenJ, lenI - x * lenI),
+                    Face.Bottom => new Vector2(y * lenJ, x * lenI),
+                    Face.South => new Vector2(x * lenI, lenJ - y * lenJ),
+                    Face.North => new Vector2(x * lenI, lenJ - y * lenJ),
+                    _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
+                };
             }
 
             Debug.WriteLine(
@@ -187,37 +211,21 @@ namespace MyGame.World.Rendering
 
             if (_isLines)
             {
-                if ((face & Faces.PositiveFaces) != Face.None)
-                    buffer.AddFaceLines(
-                        new VertexPositionTexture(Vx(0, 0), new Vector2(0, 0)),
-                        new VertexPositionTexture(Vx(0, 1), new Vector2(0, lenJ)),
-                        new VertexPositionTexture(Vx(1, 0), new Vector2(lenI, 0)),
-                        new VertexPositionTexture(Vx(1, 1), new Vector2(lenI, lenJ))
-                    );
-                else
-                    buffer.AddFaceLines(
-                        new VertexPositionTexture(Vx(1, 1), new Vector2(lenI, lenJ)),
-                        new VertexPositionTexture(Vx(0, 1), new Vector2(0, lenJ)),
-                        new VertexPositionTexture(Vx(1, 0), new Vector2(lenI, 0)),
-                        new VertexPositionTexture(Vx(0, 0), new Vector2(0, 0))
-                    );
+                buffer.AddFaceLines(
+                    new VertexPositionTexture(Vx(0, 0), Uv(0, 0)),
+                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
+                    new VertexPositionTexture(Vx(1, 0), Uv(1, 0)),
+                    new VertexPositionTexture(Vx(1, 1), Uv(1, 1))
+                );
             }
             else
             {
-                if ((face & Faces.PositiveFaces) != Face.None)
-                    buffer.AddFace(
-                        new VertexPositionTexture(Vx(0, 0), new Vector2(0, 0)),
-                        new VertexPositionTexture(Vx(0, 1), new Vector2(0, lenJ)),
-                        new VertexPositionTexture(Vx(1, 0), new Vector2(lenI, 0)),
-                        new VertexPositionTexture(Vx(1, 1), new Vector2(lenI, lenJ))
-                    );
-                else
-                    buffer.AddFace(
-                        new VertexPositionTexture(Vx(1, 1), new Vector2(lenI, lenJ)),
-                        new VertexPositionTexture(Vx(0, 1), new Vector2(0, lenJ)),
-                        new VertexPositionTexture(Vx(1, 0), new Vector2(lenI, 0)),
-                        new VertexPositionTexture(Vx(0, 0), new Vector2(0, 0))
-                    );
+                buffer.AddFace(
+                    new VertexPositionTexture(Vx(0, 0), Uv(0, 0)),
+                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
+                    new VertexPositionTexture(Vx(1, 0), Uv(1, 0)),
+                    new VertexPositionTexture(Vx(1, 1), Uv(1, 1))
+                );
             }
         }
 

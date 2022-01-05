@@ -59,8 +59,12 @@ public class WorldManager
             {
                 Kind = t
             });
-
+        
         chunk.SetBlock(new IntVector3(7, 2, 7), new BlockData
+        {
+            Kind = c
+        });
+        chunk.SetBlock(new IntVector3(7, 7, 7), new BlockData
         {
             Kind = c
         });

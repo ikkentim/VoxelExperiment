@@ -6,7 +6,9 @@ namespace MyGame.World.Rendering;
 
 public class WorldChunkMeshRender : IWorldChunkRenderer
 {
-    private WorldChunkMeshGenerator _meshGenerator;
+    private const bool IsLines = false; // generate line meshes instead of texture meshes
+
+    private readonly WorldChunkMeshGenerator _meshGenerator;
     private readonly WorldChunk _chunk;
     private readonly WorldChunkRendererResources _rendererResources;
     private ChunkMesh? _mesh;
@@ -15,7 +17,7 @@ public class WorldChunkMeshRender : IWorldChunkRenderer
     {
         _chunk = chunk;
         _rendererResources = rendererResources;
-        _meshGenerator = new WorldChunkMeshGenerator(chunk, rendererResources.TextureProvider, true);
+        _meshGenerator = new WorldChunkMeshGenerator(chunk, rendererResources.TextureProvider, IsLines);
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)

@@ -7,7 +7,7 @@ public class CobbleBlock : BlockBase
     public override TextureReference GetTexture() =>
         new()
         {
-            Name = "cobble",
+            Name = "arrow",
             Uv2 = Vector2.One
         };
 }
