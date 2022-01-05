@@ -2,7 +2,7 @@
 
 namespace MyGame.Rendering;
 
-public class WorldChunkRendererResources
+public class ChunkRendererResources
 {
     private BasicEffect? _basicEffect;
     
@@ -10,7 +10,7 @@ public class WorldChunkRendererResources
 
     public TextureProvider TextureProvider { get; }
 
-    public WorldChunkRendererResources(TextureProvider textureProvider)
+    public ChunkRendererResources(TextureProvider textureProvider)
     {
         TextureProvider = textureProvider;
     }

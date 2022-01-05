@@ -23,17 +23,17 @@ public struct BoolArray16X16
 
     public bool Get(int index)
     {
-        if (index < 0 || index >= 256)
+        if (index is < 0 or >= 256)
             throw new ArgumentOutOfRangeException(nameof(index));
 
         var rem = index % 64;
-        switch (index / 64)
+        return (index / 64) switch
         {
-            case 0: return ((_a >> rem) & 1) == 1;
-            case 1: return ((_b >> rem) & 1) == 1;
-            case 2: return ((_c >> rem) & 1) == 1;
-            default: return ((_d >> rem) & 1) == 1;
-        }
+            0 => ((_a >> rem) & 1) == 1,
+            1 => ((_b >> rem) & 1) == 1,
+            2 => ((_c >> rem) & 1) == 1,
+            _ => ((_d >> rem) & 1) == 1
+        };
     }
 
     public void Set(int index, bool value)

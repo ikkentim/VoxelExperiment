@@ -8,14 +8,14 @@ public class WorldRenderer
 {
     private readonly WorldManager _world;
     private readonly Camera _camera;
-    private readonly WorldChunkRendererResources _rendererResources;
+    private readonly ChunkRendererResources _rendererResources;
 
     public WorldRenderer(WorldManager world, Camera camera, TextureProvider textureProvider)
     {
         _world = world;
         _camera = camera;
         _world.Renderer = this;
-        _rendererResources = new WorldChunkRendererResources(textureProvider);
+        _rendererResources = new ChunkRendererResources(textureProvider);
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)
@@ -25,7 +25,7 @@ public class WorldRenderer
     
     public void ChunkLoaded(Chunk chunk)
     {
-        chunk.Renderer = new WorldChunkMeshRender(chunk, _rendererResources);
+        chunk.Renderer = new ChunkRender(chunk, _rendererResources);
         chunk.Renderer.Initialize(GlobalGameContext.Current.Game.GraphicsDevice);
     }
 

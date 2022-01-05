@@ -9,20 +9,20 @@ using MyGame.World;
 
 namespace MyGame.Rendering.Meshing;
 
-public class WorldChunkMeshGenerator
+public class GreedyMeshGenerator
 {
     private readonly Chunk _chunk;
     private readonly TextureProvider _textureProvider;
     private readonly bool _isLines;
     private readonly Dictionary<Texture2D, BufferGenerator<VertexPositionTexture>> _bufferPerAtlas = new();
 
-    public WorldChunkMeshGenerator(Chunk chunk, TextureProvider textureProvider, bool isLines)
+    public GreedyMeshGenerator(Chunk chunk, TextureProvider textureProvider, bool isLines)
     {
         _chunk = chunk;
         _textureProvider = textureProvider;
         _isLines = isLines;
 
-        Debug.Assert(Chunk.ChunkSize == 16); // required for using BoolArray16X16
+        Debug.Assert(Chunk.Size == 16); // required for using BoolArray16X16
     }
 
     public ChunkMesh Create(GraphicsDevice graphicsDevice)
@@ -32,7 +32,7 @@ public class WorldChunkMeshGenerator
             kv.Value.Clear();
         }
             
-        for (var depth = 0; depth < Chunk.ChunkSize; depth++)
+        for (var depth = 0; depth < Chunk.Size; depth++)
             foreach (var face in BlockFaces.AllFaces)
             {
                 GreedyMesh(face, depth);
@@ -63,8 +63,8 @@ public class WorldChunkMeshGenerator
     {
         var visited = new BoolArray16X16();
             
-        for (var j = 0; j < Chunk.ChunkSize; j++)
-        for (var i = 0; i < Chunk.ChunkSize; i++)
+        for (var j = 0; j < Chunk.Size; j++)
+        for (var i = 0; i < Chunk.Size; i++)
         {
             if (visited[i, j])
                 continue;
@@ -90,7 +90,7 @@ public class WorldChunkMeshGenerator
 
         // Expand covered area towards i+
         var maxI = i;
-        for (var i2 = i + 1; i2 < Chunk.ChunkSize; i2++)
+        for (var i2 = i + 1; i2 < Chunk.Size; i2++)
         {
             if (visited[i2, j])
             { 
@@ -119,7 +119,7 @@ public class WorldChunkMeshGenerator
 
         // Expand covered area towards j+
         var maxJ = j;
-        for (var j2 = j + 1; j2 < Chunk.ChunkSize; j2++)
+        for (var j2 = j + 1; j2 < Chunk.Size; j2++)
         {
             var accept = true;
 

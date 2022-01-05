@@ -2,24 +2,25 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Data;
+using MyGame.Rendering.Meshing;
 using MyGame.World;
 
-namespace MyGame.Rendering.Meshing;
+namespace MyGame.Rendering;
 
-public class WorldChunkMeshRender : IWorldChunkRenderer
+public class ChunkRender : IChunkRenderer
 {
     private const bool IsLines = false; // generate line meshes instead of texture meshes
 
-    private readonly WorldChunkMeshGenerator _meshGenerator;
+    private readonly GreedyMeshGenerator _meshGenerator;
     private readonly Chunk _chunk;
-    private readonly WorldChunkRendererResources _rendererResources;
+    private readonly ChunkRendererResources _rendererResources;
     private ChunkMesh? _mesh;
 
-    public WorldChunkMeshRender(Chunk chunk, WorldChunkRendererResources rendererResources)
+    public ChunkRender(Chunk chunk, ChunkRendererResources rendererResources)
     {
         _chunk = chunk;
         _rendererResources = rendererResources;
-        _meshGenerator = new WorldChunkMeshGenerator(chunk, rendererResources.TextureProvider, IsLines);
+        _meshGenerator = new GreedyMeshGenerator(chunk, rendererResources.TextureProvider, IsLines);
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)
@@ -27,12 +28,12 @@ public class WorldChunkMeshRender : IWorldChunkRenderer
         _mesh = _meshGenerator.Create(graphicsDevice);
     }
 
-    public void BlockUpdated(IntVector3 localPosition)
+    public void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock)
     {
         // TODO
         throw new NotImplementedException();
     }
-
+    
     public void Draw(GraphicsDevice graphicsDevice)
     {
         graphicsDevice.SamplerStates[0] = SamplerState.PointWrap;

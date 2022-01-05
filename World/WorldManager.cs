@@ -31,7 +31,8 @@ public class WorldManager
 
         if (chunk == null)
         {
-            // Chunk not loaded. Returning a local air block for now. Should change this later because callers can modify the contents of the block data.
+            // Chunk not loaded. Returning a local air block for now.
+            // TODO: Should change this later because callers can modify the contents of the block data.
             return ref _badAirBlock;
         }
 
@@ -52,9 +53,9 @@ public class WorldManager
 
         var c = new CobbleBlock();
 
-        for (var x = 0; x < Chunk.ChunkSize; x++)
+        for (var x = 0; x < Chunk.Size; x++)
         for (var y = 0; y < 2; y++)
-        for (var z = 0; z < Chunk.ChunkSize; z++)
+        for (var z = 0; z < Chunk.Size; z++)
             chunk.SetBlock(new IntVector3(x, y, z), new BlockData
             {
                 Kind = t
@@ -77,6 +78,7 @@ public class WorldManager
         
         _loadedChunks.Add(chunk);
 
+        // OnLoaded must be called after the chunk was added to the loaded chunks list to allow the mesh generator to find face information.
         chunk.OnLoaded();
 
         Renderer?.ChunkLoaded(chunk); 

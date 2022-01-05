@@ -1,11 +1,12 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using MyGame.Data;
+using MyGame.World;
 
 namespace MyGame.Rendering;
 
-public interface IWorldChunkRenderer
+public interface IChunkRenderer
 {
     void Initialize(GraphicsDevice graphicsDevice);
-    void BlockUpdated(IntVector3 localPosition);
+    void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock);
     void Draw(GraphicsDevice graphicsDevice);
 }
