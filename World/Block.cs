@@ -1,27 +1,43 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using MyGame.Data;
+using MyGame.World.Blocks;
 
 namespace MyGame.World;
 
-public static class Block
+public abstract class Block
 {
-    public static Vector3 GetLocalFacePosition(IntVector3 localPos, Face face)
-    {
-        var normal = Faces.GetNormal(face);
-        var up = Faces.GetUp(face);
+    private const string DefaultTexture = "notex";
 
-        if (Faces.IsPositive(face))
+    public virtual TextureReference GetTexture() =>
+        new()
         {
-            localPos += normal;
+            Name = DefaultTexture,
+            Uv1 = Vector2.Zero,
+            Uv2 = Vector2.One
+        };
+
+    public virtual void OnCreated(ref BlockData block, IntVector3 position, WorldManager world)
+    {
+        var faces = BlockFace.None;
+
+        foreach (var face in BlockFaces.AllFaces)
+        {
+            var normal = BlockFaces.GetNormal(face);
+
+            var neighbor = position + normal;
+            
+            if (world.GetBlock(neighbor).Kind is null or AirBlock)
+            {
+                faces |= face;
+            }
         }
 
-        var cross = Vector3.Cross(normal, up);
-        var absCross = new Vector3(
-            MathF.Abs(cross.X),
-            MathF.Abs(cross.Y),
-            MathF.Abs(cross.Z)
-        );
+        block.VisibleBlockFaces = faces;
+    }
 
-        return localPos + (absCross + up) * 0.5f;
+    public virtual void OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
+    {
+        var flag = neighbor.Kind is null or AirBlock ? direction : BlockFace.None;
+        block.VisibleBlockFaces = (block.VisibleBlockFaces & ~direction) | flag;
     }
 }

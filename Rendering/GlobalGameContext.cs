@@ -6,7 +6,7 @@ public class GlobalGameContext
 {
     private static GlobalGameContext? _current;
 
-    private GlobalGameContext(Game1 game)
+    private GlobalGameContext(VoxelGame game)
     {
         Game = game;
     }
@@ -15,7 +15,7 @@ public class GlobalGameContext
 
     public GameWindow Window => Game.Window;
 
-    public Game1 Game { get; init; }
+    public VoxelGame Game { get; init; }
 
     public Vector2 WindowSize => Window.ClientBounds.Size.ToVector2();
 
@@ -25,7 +25,7 @@ public class GlobalGameContext
         0.1f,
         100);
 
-    public static void Initialize(Game1 game)
+    public static void Initialize(VoxelGame game)
     {
         _current = new GlobalGameContext(game);
     }
