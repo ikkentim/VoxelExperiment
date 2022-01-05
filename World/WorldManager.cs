@@ -59,6 +59,15 @@ public class WorldManager
             {
                 Kind = t
             });
+
+        
+        for (var x = 0; x < WorldChunk.ChunkSize; x++)
+        for (var y = 3; y < 5; y++)
+        for (var z = 0; z < WorldChunk.ChunkSize; z++)
+            chunk.SetBlock(new IntVector3(x, y, z), new BlockData
+            {
+                Kind = t
+            });
         
         chunk.SetBlock(new IntVector3(7, 2, 7), new BlockData
         {

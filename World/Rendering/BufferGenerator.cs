@@ -29,9 +29,9 @@ public class BufferGenerator<T> where T : struct
 
         _primitiveCount += 2;
             
-        // c - d
-        // |   |
         // a - b
+        // |   |
+        // c - d
         if (_shortList == null || _shortList.Count >= short.MaxValue - 6)
         {
             if (_shortList != null)
@@ -41,20 +41,20 @@ public class BufferGenerator<T> where T : struct
                 _shortList = null;
             }
             
-            _intList!.Add(start + 0);
+            _intList!.Add(start + 2);
             _intList.Add(start + 1);
-            _intList.Add(start + 3);
             _intList.Add(start + 0);
             _intList.Add(start + 3);
+            _intList.Add(start + 1);
             _intList.Add(start + 2);
         }
         else
         {
-            _shortList.Add((short)(start + 0));
+            _shortList.Add((short)(start + 2));
             _shortList.Add((short)(start + 1));
-            _shortList.Add((short)(start + 3));
             _shortList.Add((short)(start + 0));
             _shortList.Add((short)(start + 3));
+            _shortList.Add((short)(start + 1));
             _shortList.Add((short)(start + 2));
         }
     }
@@ -69,9 +69,9 @@ public class BufferGenerator<T> where T : struct
 
         _primitiveCount += 5;
             
-        // c - d
-        // |   |
         // a - b
+        // |   |
+        // c - d
         if (_shortList == null || _shortList.Count >= short.MaxValue - 6)
         {
             if (_shortList != null)
@@ -81,29 +81,29 @@ public class BufferGenerator<T> where T : struct
                 _shortList = null;
             }
             
-            _intList!.Add(start + 0);
+            _intList!.Add(start + 2);
             _intList.Add(start + 1);
             _intList.Add(start + 1);
-            _intList.Add(start + 3);
-            _intList.Add(start + 3);
-            _intList.Add(start + 2);
-            _intList.Add(start + 2);
             _intList.Add(start + 0);
             _intList.Add(start + 0);
             _intList.Add(start + 3);
+            _intList.Add(start + 3);
+            _intList.Add(start + 1);
+            _intList.Add(start + 1);
+            _intList.Add(start + 2);
         }
         else
         {
-            _shortList.Add((short)(start + 0));
+            _shortList.Add((short)(start + 2));
             _shortList.Add((short)(start + 1));
             _shortList.Add((short)(start + 1));
-            _shortList.Add((short)(start + 3));
-            _shortList.Add((short)(start + 3));
-            _shortList.Add((short)(start + 2));
-            _shortList.Add((short)(start + 2));
             _shortList.Add((short)(start + 0));
             _shortList.Add((short)(start + 0));
             _shortList.Add((short)(start + 3));
+            _shortList.Add((short)(start + 3));
+            _shortList.Add((short)(start + 1));
+            _shortList.Add((short)(start + 1));
+            _shortList.Add((short)(start + 2));
         }
     }
 

@@ -162,15 +162,9 @@ namespace MyGame.World.Rendering
 
                 maxJ++;
             }
-
-            var vertexOrigin = localBlockPosition;
-
-            if ((face & Faces.PositiveFaces) != Face.None)
-                vertexOrigin += Faces.GetNormal(face);
-
+            
             var buffer = GetBuffer(sourceTexture);
-
-            AddFaces(face, depth, i, j, maxI, maxJ, vertexOrigin, buffer);
+            AddFaces(face, depth, i, j, maxI, maxJ, localBlockPosition, buffer);
         }
 
         private void AddFaces(Face face, int depth, int i, int j, int maxI, int maxJ, IntVector3 vertexOrigin, BufferGenerator<VertexPositionTexture> buffer)
@@ -178,33 +172,19 @@ namespace MyGame.World.Rendering
             var lenI = maxI - i + 1;
             var lenJ = maxJ - j + 1;
             
+            var faceSize = GetPosition(face, 0, lenI, lenJ);
+            
             Vector3 Vx(int x, int y)
             {
-                return face switch
-                {
-                    Face.East => vertexOrigin + new IntVector3(0, x * lenI, y * lenJ),
-                    Face.West => vertexOrigin + new IntVector3(0, x * lenI, lenJ - y * lenJ),
-                    Face.Top => vertexOrigin + new IntVector3(y * lenJ, 0, x * lenI),
-                    Face.Bottom => vertexOrigin + new IntVector3(lenJ - y * lenJ, 0, x * lenI),
-                    Face.South => vertexOrigin + new IntVector3(x * lenI, y * lenJ, 0),
-                    Face.North => vertexOrigin + new IntVector3(lenI - x * lenI, y * lenJ, 0),
-                    _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
-                };
+                return GetFaceVertex(vertexOrigin, face, faceSize, new Vector2(x, y));
             }
 
             Vector2 Uv(int x, int y)
             {
-                return face switch
-                {
-                    Face.East => new Vector2(lenI - y * lenI, lenJ - x * lenJ),
-                    Face.West => new Vector2(lenI - y * lenI, lenJ - x * lenJ),
-                    Face.Top => new Vector2(lenJ - y * lenJ, lenI - x * lenI),
-                    Face.Bottom => new Vector2(y * lenJ, x * lenI),
-                    Face.South => new Vector2(x * lenI, lenJ - y * lenJ),
-                    Face.North => new Vector2(x * lenI, lenJ - y * lenJ),
-                    _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
-                };
+                var mul = face is Face.North or Face.South ? new Vector2(lenI, lenJ) : new Vector2(lenJ, lenI);
+                return new Vector2(1-x, y) * mul;
             }
+
 
             Debug.WriteLine(
                 $"Adding face {Vx(0, 0)},{Vx(1, 0)},{Vx(0, 1)},{Vx(1, 1)} - normal {Faces.GetNormal(face)} ({face}) depth {depth} i {i}-{maxI} j {j}-{maxJ}");
@@ -213,8 +193,8 @@ namespace MyGame.World.Rendering
             {
                 buffer.AddFaceLines(
                     new VertexPositionTexture(Vx(0, 0), Uv(0, 0)),
-                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
                     new VertexPositionTexture(Vx(1, 0), Uv(1, 0)),
+                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
                     new VertexPositionTexture(Vx(1, 1), Uv(1, 1))
                 );
             }
@@ -222,11 +202,42 @@ namespace MyGame.World.Rendering
             {
                 buffer.AddFace(
                     new VertexPositionTexture(Vx(0, 0), Uv(0, 0)),
-                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
                     new VertexPositionTexture(Vx(1, 0), Uv(1, 0)),
+                    new VertexPositionTexture(Vx(0, 1), Uv(0, 1)),
                     new VertexPositionTexture(Vx(1, 1), Uv(1, 1))
                 );
             }
+        }
+
+        private static Vector3 GetFaceVertex(IntVector3 blockPosition, Face face, Vector3 faceSize, Vector2 facePosition)
+        {
+            Vector3 position = blockPosition;
+            var normal = Faces.GetNormal(face);
+            var up = Faces.GetUp(face);
+
+            if (Faces.IsPositive(face))
+            {
+                position += normal;
+            }
+
+            var cross = Vector3.Cross(normal, up);
+            var absCross = new Vector3(
+                MathF.Abs(cross.X),
+                MathF.Abs(cross.Y),
+                MathF.Abs(cross.Z)
+            );
+
+
+            // Get center
+            position += (absCross + up) * (faceSize / 2);
+
+            // Get top-right
+            position += (cross + up) * (faceSize / 2);
+
+            // Get desired position on face
+            position += (cross * -(1 - facePosition.X) + up * -facePosition.Y) * faceSize;
+
+            return position;
         }
 
         private BufferGenerator<VertexPositionTexture> GetBuffer(string textureName)

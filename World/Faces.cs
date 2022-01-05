@@ -34,6 +34,9 @@ public static class Faces
 
         return (Face)((int)face >> 1);
     }
+    
+    public static bool IsPositive(Face face) => Face.None != (PositiveFaces & face);
+    public static bool IsNegative(Face face) => Face.None != (NegativeFaces & face);
 
     public static IntVector3 GetNormal(Face face)
     {
@@ -45,6 +48,20 @@ public static class Faces
             Face.North => -IntVector3.UnitZ,
             Face.West => -IntVector3.UnitX,
             Face.East => IntVector3.UnitX,
+            _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
+        };
+    }
+
+    public static IntVector3 GetUp(Face face)
+    {
+        return face switch
+        {
+            Face.Bottom => IntVector3.UnitZ,
+            Face.Top => IntVector3.UnitZ,
+            Face.South => IntVector3.UnitY,
+            Face.North => IntVector3.UnitY,
+            Face.West => IntVector3.UnitY,
+            Face.East => IntVector3.UnitY,
             _ => throw new ArgumentOutOfRangeException(nameof(face), face, null)
         };
     }
