@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using MyGame.Rendering.Meshing;
 using MyGame.World;
 
 namespace MyGame.Rendering;
@@ -10,12 +9,12 @@ public class WorldRenderer
     private readonly Camera _camera;
     private readonly ChunkRendererResources _rendererResources;
 
-    public WorldRenderer(WorldManager world, Camera camera, TextureProvider textureProvider)
+    public WorldRenderer(WorldManager world, Camera camera, TextureRegistry textureRegistry)
     {
         _world = world;
         _camera = camera;
         _world.Renderer = this;
-        _rendererResources = new ChunkRendererResources(textureProvider);
+        _rendererResources = new ChunkRendererResources(textureRegistry);
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)

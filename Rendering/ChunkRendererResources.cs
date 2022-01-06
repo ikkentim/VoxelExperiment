@@ -8,11 +8,11 @@ public class ChunkRendererResources
     
     public BasicEffect BasicEffect => _basicEffect!;
 
-    public TextureProvider TextureProvider { get; }
+    public TextureRegistry TextureRegistry { get; }
 
-    public ChunkRendererResources(TextureProvider textureProvider)
+    public ChunkRendererResources(TextureRegistry textureRegistry)
     {
-        TextureProvider = textureProvider;
+        TextureRegistry = textureRegistry;
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)

@@ -20,7 +20,7 @@ public class ChunkRender : IChunkRenderer
     {
         _chunk = chunk;
         _rendererResources = rendererResources;
-        _meshGenerator = new GreedyMeshGenerator(chunk, rendererResources.TextureProvider, IsLines);
+        _meshGenerator = new GreedyMeshGenerator(chunk, rendererResources.TextureRegistry, IsLines);
     }
 
     public void Initialize(GraphicsDevice graphicsDevice)

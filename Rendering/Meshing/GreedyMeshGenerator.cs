@@ -12,14 +12,14 @@ namespace MyGame.Rendering.Meshing;
 public class GreedyMeshGenerator
 {
     private readonly Chunk _chunk;
-    private readonly TextureProvider _textureProvider;
+    private readonly TextureRegistry _textureRegistry;
     private readonly bool _isLines;
     private readonly Dictionary<Texture2D, BufferGenerator<VertexPositionTexture>> _bufferPerAtlas = new();
 
-    public GreedyMeshGenerator(Chunk chunk, TextureProvider textureProvider, bool isLines)
+    public GreedyMeshGenerator(Chunk chunk, TextureRegistry textureRegistry, bool isLines)
     {
         _chunk = chunk;
-        _textureProvider = textureProvider;
+        _textureRegistry = textureRegistry;
         _isLines = isLines;
 
         Debug.Assert(Chunk.Size == 16); // required for using BoolArray16X16
@@ -86,7 +86,7 @@ public class GreedyMeshGenerator
         }
             
         // The texture we'll be merging in the current routine
-        var sourceTexture = source.Kind!.GetTexture().Name;
+        var sourceTexture = source.Kind!.GetTexture(blockFace).Name;
 
         // Expand covered area towards i+
         var maxI = i;
@@ -107,7 +107,7 @@ public class GreedyMeshGenerator
                 break;
             }
 
-            if (block.Kind!.GetTexture().Name != sourceTexture)
+            if (block.Kind!.GetTexture(blockFace).Name != sourceTexture)
             {
                 // face has a different texture
                 break;
@@ -143,7 +143,7 @@ public class GreedyMeshGenerator
                     break;
                 }
 
-                if (block.Kind!.GetTexture().Name != sourceTexture)
+                if (block.Kind!.GetTexture(blockFace).Name != sourceTexture)
                 {
                     // face has a different texture
                     accept = false;
@@ -164,12 +164,14 @@ public class GreedyMeshGenerator
 
             maxJ++;
         }
-            
-        var buffer = GetBuffer(sourceTexture);
-        AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer);
+        
+        var textureReference = _textureRegistry.GetTexture(sourceTexture);
+        var buffer = _bufferPerAtlas.GetOrAdd(textureReference.Texture);
+        
+        AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
     }
 
-    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, BufferGenerator<VertexPositionTexture> buffer)
+    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, BufferGenerator<VertexPositionTexture> buffer, TextureAtlasReference textureReference)
     {
         var lenI = maxI - i + 1;
         var lenJ = maxJ - j + 1;
@@ -205,6 +207,9 @@ public class GreedyMeshGenerator
             uv.X = 1 - uv.X; // invert x for now...
             uv *= size;
 
+            uv *= textureReference.UvSize;
+            uv += textureReference.Uv;
+
             return new VertexPositionTexture(position, uv);
         }
             
@@ -227,13 +232,7 @@ public class GreedyMeshGenerator
             );
         }
     }
-
-    private BufferGenerator<VertexPositionTexture> GetBuffer(string textureName)
-    {
-        var atlas = _textureProvider.GetTexture(textureName);
-        return _bufferPerAtlas.GetOrAdd(atlas);
-    }
-        
+ 
     private static IntVector3 GetPosition(BlockFace blockFace, int depth, int i, int j)
     {
         var normal = BlockFaces.GetNormal(blockFace);

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using MyGame.Data;
 using MyGame.World.Blocks;
 
@@ -6,15 +7,20 @@ namespace MyGame.World;
 
 public abstract class Block
 {
-    private const string DefaultTexture = "notex";
+    public const string DefaultTexture = "notex";
 
-    public virtual TextureReference GetTexture() =>
+    public virtual TextureReference GetTexture(BlockFace face) =>
         new()
         {
             Name = DefaultTexture,
-            Uv1 = Vector2.Zero,
-            Uv2 = Vector2.One
         };
+
+    public virtual string Name => GetType().FullName!;
+
+    public virtual IEnumerable<TextureReference> GetTextures()
+    {
+        yield return new TextureReference { Name = DefaultTexture };
+    }
 
     public virtual void OnCreated(ref BlockData block, IntVector3 position, WorldManager world)
     {

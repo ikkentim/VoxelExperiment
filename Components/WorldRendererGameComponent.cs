@@ -9,7 +9,7 @@ public class WorldRendererGameComponent : DrawableGameComponent
 
     public WorldRendererGameComponent(VoxelGame game) : base(game)
     {
-        _renderer = new WorldRenderer(game.WorldManager, game.Camera, game.TextureProvider);
+        _renderer = new WorldRenderer(game.WorldManager, game.Camera, game.TextureRegistry);
     }
 
     public override void Initialize()

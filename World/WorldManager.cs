@@ -46,36 +46,9 @@ public class WorldManager
     {
         return _loadedChunks;
     }
-
-    private static void GenerateTestChunk(Chunk chunk)
+    
+    public void LoadChunk(Chunk chunk)
     {
-        var t = new TestBlock();
-
-        var c = new CobbleBlock();
-
-        for (var x = 0; x < Chunk.Size; x++)
-        for (var y = 0; y < 2; y++)
-        for (var z = 0; z < Chunk.Size; z++)
-            chunk.SetBlock(new IntVector3(x, y, z), new BlockData
-            {
-                Kind = t
-            });
-
-        chunk.SetBlock(new IntVector3(7, 2, 7), new BlockData
-        {
-            Kind = c
-        });
-        chunk.SetBlock(new IntVector3(7, 7, 7), new BlockData
-        {
-            Kind = c
-        });
-    }
-
-    public void LoadInitialChunks()
-    {
-        var chunk = new Chunk(this, new IntVector3(0, 0, 0));
-        GenerateTestChunk(chunk);
-        
         _loadedChunks.Add(chunk);
 
         // OnLoaded must be called after the chunk was added to the loaded chunks list to allow the mesh generator to find face information.

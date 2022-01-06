@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace MyGame.Rendering;
+namespace MyGame;
 
 public class GlobalGameContext
 {
