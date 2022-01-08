@@ -21,7 +21,7 @@ public class TextureRegistry
     private bool _isLocked;
     private readonly List<string> _registeredTextures = new();
     private readonly Dictionary<string, TextureAtlasReference> _assocTable = new();
-
+    
     public void Register(string name)
     {
         if (_isLocked)
@@ -75,9 +75,9 @@ public class TextureRegistry
 
             var atlasWidth = Math.Min(images.Count, AtlasWithInTextures) * width;
             var atlasRows = images.Count / AtlasWithInTextures + (images.Count % AtlasWithInTextures == 0 ? 0 : 1);
-            var atlasHeight = atlasRows * atlasWidth;
+            var atlasHeight = atlasRows * width;
 
-            Debug.WriteLine($"Creating texture atlas for textures@{width} with {atlasRows} rows");
+            Debug.WriteLine($"Creating texture atlas for textures@{width} with {atlasRows} rows and {images.Count} textures");
 
             var imageBuffer = new Color[width * width];
             var atlasTexture = new Texture2D(graphicsDevice, atlasWidth, atlasHeight);

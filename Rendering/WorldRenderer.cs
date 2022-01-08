@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using MyGame.World;
 
 namespace MyGame.Rendering;
@@ -21,6 +22,11 @@ public class WorldRenderer
     {
         _rendererResources.Initialize(graphicsDevice);
     }
+
+    public void LoadContent(ContentManager content)
+    {
+        _rendererResources.LoadContent(content);
+    }
     
     public void ChunkLoaded(Chunk chunk)
     {
@@ -30,9 +36,9 @@ public class WorldRenderer
 
     public void Draw(GraphicsDevice graphicsDevice)
     {
-        _rendererResources.BasicEffect.TextureEnabled = true;
         _rendererResources.BasicEffect.View = _camera.ViewMatrix;
         _rendererResources.BasicEffect.Projection = GlobalGameContext.Current.Projection;
+        _rendererResources.BasicEffect.TextureEnabled = true;
       
         var chunks = _world.GetLoadedChunks();
 

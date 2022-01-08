@@ -17,6 +17,11 @@ public class WorldRendererGameComponent : DrawableGameComponent
         _renderer.Initialize(GraphicsDevice);
     }
 
+    protected override void LoadContent()
+    {
+        _renderer.LoadContent(Game.Content);
+    }
+
     public override void Draw(GameTime gameTime)
     {
         _renderer.Draw(GraphicsDevice);
