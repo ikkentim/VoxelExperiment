@@ -56,11 +56,11 @@ public class PlayerController
     
     private void UpdateLooking(float deltaTime)
     {
-        const float rotationSpeed = 0.03f;
+        const float rotationSpeed = 0.15f;
         
         var input = _rawMouseInput.GetInput();
 
-        var off = input * rotationSpeed * deltaTime;
+        var off = input * rotationSpeed;// * deltaTime;
 
         if (Math.Abs(off.X + off.Y) > 0.2f)
         {

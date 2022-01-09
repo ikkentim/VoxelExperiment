@@ -85,11 +85,11 @@ public class BufferGenerator<T> where T : struct
             _intList.Add(start + 1);
             _intList.Add(start + 0);
             _intList.Add(start + 0);
-            _intList.Add(start + 3);
-            _intList.Add(start + 3);
-            _intList.Add(start + 1);
-            _intList.Add(start + 1);
             _intList.Add(start + 2);
+            _intList.Add(start + 2);
+            _intList.Add(start + 3);
+            _intList.Add(start + 3);
+            _intList.Add(start + 1);
         }
         else
         {
@@ -98,11 +98,11 @@ public class BufferGenerator<T> where T : struct
             _shortList.Add((short)(start + 1));
             _shortList.Add((short)(start + 0));
             _shortList.Add((short)(start + 0));
-            _shortList.Add((short)(start + 3));
-            _shortList.Add((short)(start + 3));
-            _shortList.Add((short)(start + 1));
-            _shortList.Add((short)(start + 1));
             _shortList.Add((short)(start + 2));
+            _shortList.Add((short)(start + 2));
+            _shortList.Add((short)(start + 3));
+            _shortList.Add((short)(start + 3));
+            _shortList.Add((short)(start + 1));
         }
     }
 

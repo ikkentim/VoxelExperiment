@@ -12,19 +12,30 @@ sampler TextureSampler : register(s0);
 
 matrix WorldViewProjection;
 float2 TextureSize;
+float4 LineColor;
 
 struct VSInput
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD0;
-    float2 TextureBase   : TEXCOORD1;
+    float2 TextureBase : TEXCOORD1;
 };
 
 struct VSOutput
 {
     float4 PositionPS : SV_Position;
-    float2 TexCoord   : TEXCOORD0;
-    float2 TextureBase   : TEXCOORD1;
+    float2 TexCoord : TEXCOORD0;
+    float2 TextureBase : TEXCOORD1;
+};
+
+struct VSLineInput
+{
+    float4 Position : SV_Position;
+};
+
+struct VSLineOutput
+{
+    float4 PositionPS : SV_Position;
 };
 
 VSOutput MainVS(VSInput vin)
@@ -39,6 +50,15 @@ VSOutput MainVS(VSInput vin)
     return vout;
 }
 
+VSLineOutput MainLineVS(VSLineInput vin)
+{
+    VSLineOutput vout;
+
+    vout.PositionPS = mul(vin.Position, WorldViewProjection);
+
+    return vout;
+}
+
 float4 MainPS(VSOutput pin) : SV_Target0
 {
     float2 texCoord;
@@ -48,11 +68,25 @@ float4 MainPS(VSOutput pin) : SV_Target0
     return Texture.Sample(TextureSampler, texCoord);
 }
 
-technique BasicColorDrawing
+float4 MainLinePS(VSLineOutput pin) : SV_TARGET0
 {
-	pass P0
+    return LineColor;
+}
+
+technique BlockFaceDrawing
+{
+	pass Tex
 	{
 		VertexShader = compile VS_SHADERMODEL MainVS();
 		PixelShader = compile PS_SHADERMODEL MainPS();
 	}
 };
+
+technique BlockFaceLines
+{
+    pass Lines
+    {
+        VertexShader = compile VS_SHADERMODEL MainLineVS();
+        PixelShader = compile PS_SHADERMODEL MainLinePS();
+    }
+}

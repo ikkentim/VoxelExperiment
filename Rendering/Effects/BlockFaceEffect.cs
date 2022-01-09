@@ -10,18 +10,21 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     private Matrix _view;
     private Matrix _world;
     private Vector2 _textureSize;
+    private Color _lineColor;
     private DirtyFlags _dirtyFlags;
 
 
     private readonly EffectParameter _textureParam;
     private readonly EffectParameter _worldViewProjectionParam;
     private readonly EffectParameter _textureSizeParam;
+    private readonly EffectParameter _lineColorParam;
 
     public BlockFaceEffect(Effect cloneSource) : base(cloneSource)
     {
         _textureParam = Parameters["Texture"];
         _worldViewProjectionParam = Parameters["WorldViewProjection"];
         _textureSizeParam = Parameters["TextureSize"];
+        _lineColorParam = Parameters["LineColor"];
 
         if (cloneSource is BlockFaceEffect known)
         {
@@ -29,6 +32,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _view = known._view;
             _world = known._world;
             _textureSize = known._textureSize;
+            _lineColor = known._lineColor;
             _dirtyFlags = known._dirtyFlags;
         }
     }
@@ -78,21 +82,53 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _dirtyFlags |= DirtyFlags.TextureSize;
         }
     }
-    
+
+    public Color LineColor
+    {
+        get => _lineColor;
+        set
+        {
+            _lineColor = value; 
+            _dirtyFlags |= DirtyFlags.LineColor;
+        }
+    }
+
+    private bool _drawLines;
+
+    public bool DrawLines
+    {
+        get => _drawLines;
+        set
+        {
+            _drawLines = value;
+            _dirtyFlags |= DirtyFlags.Technique;
+        }
+    }
+
     protected override void OnApply()
     {
         if ((_dirtyFlags & DirtyFlags.WorldViewProjection) != 0)
         {
             _worldViewProjectionParam.SetValue(World * View * Projection);
         }
+
         if ((_dirtyFlags & DirtyFlags.TextureSize) != 0)
         {
             _textureSizeParam.SetValue(_textureSize);
         }
 
+        if ((_dirtyFlags & DirtyFlags.LineColor) != 0)
+        {
+            _lineColorParam.SetValue(_lineColor.ToVector4());
+        }
+
+        if ((_dirtyFlags & DirtyFlags.Technique) != 0)
+        {
+            CurrentTechnique = _drawLines ? Techniques[1] : Techniques[0];
+        }
+
         _dirtyFlags = DirtyFlags.None;
 
-        CurrentTechnique = Techniques[0];
 
         base.OnApply();
     }
@@ -103,5 +139,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         None,
         WorldViewProjection,
         TextureSize,
+        LineColor,
+        Technique
     }
 }

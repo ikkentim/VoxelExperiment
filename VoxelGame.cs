@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MyGame.Components;
 using MyGame.Data;
@@ -99,6 +100,9 @@ public class VoxelGame : Game
 
     private void InitializeDisplay()
     {
+        TargetElapsedTime = TimeSpan.FromMilliseconds(1);
+        MaxElapsedTime = TimeSpan.FromMilliseconds(1000f/30);
+
         _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
         _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
         // _graphics.IsFullScreen = true;

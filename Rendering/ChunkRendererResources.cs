@@ -7,12 +7,12 @@ namespace MyGame.Rendering;
 
 public class ChunkRendererResources
 {
-    private BlockFaceEffect? _newEffect;
+    private BlockFaceEffect? _blockFaceEffect;
     private BasicEffect? _basicEffect;
     
     public BasicEffect BasicEffect => _basicEffect!;
 
-    public BlockFaceEffect NewEffect => _newEffect;
+    public BlockFaceEffect BlockFaceEffect => _blockFaceEffect;
 
     public TextureRegistry TextureRegistry { get; }
 
@@ -28,6 +28,6 @@ public class ChunkRendererResources
 
     public void LoadContent(ContentManager content)
     {
-        _newEffect = new BlockFaceEffect(content.Load<Effect>("BlockFaceEffect"));
+        _blockFaceEffect = new BlockFaceEffect(content.Load<Effect>("BlockFaceEffect"));
     }
 }
