@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using MyGame.Components;
 using MyGame.Data;
+using MyGame.Platform;
 using MyGame.Rendering;
 using MyGame.World;
 using MyGame.World.Blocks;
@@ -26,7 +27,7 @@ public class VoxelGame : Game
 
         IsMouseVisible = true;
     }
-
+    
     protected override void Initialize()
     {
         GlobalGameContext.Initialize(this);

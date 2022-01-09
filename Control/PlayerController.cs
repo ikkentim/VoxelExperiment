@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
+using MyGame.Platform;
 using MyGame.Rendering;
 
 namespace MyGame.Control;
@@ -10,16 +12,19 @@ public class PlayerController
     
     private Vector2 _look = new(-MathHelper.PiOver2, 0);
     private Vector3 _position = Vector3.Zero;
-
-    private readonly MouseInput _mouseInput = new();
+    
+    private readonly IRawMouseInput _rawMouseInput;
     private readonly KeyboardInput _keyboardInput = new();
 
-    public PlayerController(Camera camera)
+    public PlayerController(Camera camera, Game game)
     {
         _camera = camera;
+        _rawMouseInput = new WindowsRawMouseInput(game);
+
+        _rawMouseInput.Start();
     }
 
-    public bool IsCapturingMouse => _mouseInput.IsCapturing;
+    public bool IsCapturingMouse => _rawMouseInput.IsCapturing;
     
     public void Update(float deltaTime)
     {
@@ -48,19 +53,28 @@ public class PlayerController
         var delta = Vector3.Transform(kbVec, mat);
         _position += delta;
     }
-
+    
     private void UpdateLooking(float deltaTime)
     {
-        const float rotationSpeed = 0.05f;
+        const float rotationSpeed = 0.03f;
         
-        var input = _mouseInput.GetInput();
+        var input = _rawMouseInput.GetInput();
+
+        var off = input * rotationSpeed * deltaTime;
+
+        if (Math.Abs(off.X + off.Y) > 0.2f)
+        {
+
+        }
 
         _look -= input * rotationSpeed * deltaTime;
         _look.X = MathHelper.WrapAngle(_look.X);
         _look.Y = MathHelper.Clamp(_look.Y, -LookPitchLimit, LookPitchLimit);
     }
+    
+    public void StartCaptureMouse() => _rawMouseInput.Start();
+    public void PauseCaptureMouse() => _rawMouseInput.Pause();
+    public void ResumeCaptureMouse() => _rawMouseInput.Resume();
 
-    public void StartCaptureMouse() => _mouseInput.StartCapture();
-
-    public void StopMouseCapture() => _mouseInput.StopCapture();
+    public void StopMouseCapture() => _rawMouseInput.Stop();
 }

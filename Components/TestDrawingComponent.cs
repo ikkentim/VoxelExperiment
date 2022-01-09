@@ -48,7 +48,6 @@ public class TestDrawingComponent : DrawableGameComponent
         // Draw with custom effect
         ApplyTranslation(_blockFaceEffect!, Vector3.One * 2);
         _blockFaceEffect!.Texture = cottonBlue.Texture;
-        _blockFaceEffect.TextureUv = new Vector2(1f / 5, 1);
         _blockFaceEffect.TextureSize = new Vector2(1f / 5, 1);
         
         foreach (var pass in _blockFaceEffect!.CurrentTechnique.Passes)

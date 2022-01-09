@@ -12,7 +12,7 @@ public class PlayerControllerComponent : GameComponent
 
     public PlayerControllerComponent(VoxelGame game) : base(game)
     {
-        _playerController = new PlayerController(game.Camera);
+        _playerController = new PlayerController(game.Camera, game);
     }
 
     private new VoxelGame Game => (VoxelGame)base.Game;
@@ -39,7 +39,7 @@ public class PlayerControllerComponent : GameComponent
             {
                 if (_playerController.IsCapturingMouse)
                 {
-                    _playerController.StopMouseCapture();
+                    _playerController.PauseCaptureMouse();
                 }
                 else
                 {
@@ -61,7 +61,7 @@ public class PlayerControllerComponent : GameComponent
             m.X >= 0 && m.Y >= 0 && m.X < Game.Window.ClientBounds.Size.X && m.Y < Game.Window.ClientBounds.Size.Y
            )
         {
-            _playerController.StartCaptureMouse();
+            _playerController.ResumeCaptureMouse();
         }
     }
 }

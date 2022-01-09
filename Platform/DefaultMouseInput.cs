@@ -1,19 +1,25 @@
-﻿using System.Diagnostics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MyGame.Rendering;
 
-namespace MyGame.Control;
+namespace MyGame.Platform;
 
-public class MouseInput
+/// <summary>
+/// Fallback non-raw mouse input.
+/// </summary>
+public class DefaultMouseInput : IRawMouseInput
 {
+    private readonly Game _game;
     private bool _isCapturing;
     private MouseState _lastMouseState;
 
-    // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
+    public DefaultMouseInput(Game game)
+    {
+        _game = game;
+    }
+    
     public bool IsCapturing => _isCapturing;
-
-    public void StartCapture()
+    
+    private void StartCapture()
     {
         if (_isCapturing)
         {
@@ -21,18 +27,30 @@ public class MouseInput
         }
 
         _isCapturing = true;
-
-        GlobalGameContext.Current.Game.IsMouseVisible = false;
+        _game.IsMouseVisible = false;
         
-        var center = GlobalGameContext.Current.WindowSize / 2;
+        var center = _game.Window.ClientBounds.Size.ToVector2() / 2;
         Mouse.SetPosition((int)center.X, (int)center.Y);
         _lastMouseState = Mouse.GetState();
     }
 
-    public void StopCapture()
+    private void StopCapture()
     {
-        _isCapturing = false;
-        GlobalGameContext.Current.Game.IsMouseVisible = true;
+        if (_isCapturing)
+        {
+            _isCapturing = false;
+            _game.IsMouseVisible = true;
+        }
+    }
+    
+    public void Start()
+    {
+        StartCapture();
+    }
+
+    public void Stop()
+    {
+        StopCapture();
     }
 
     public Vector2 GetInput()
@@ -48,7 +66,6 @@ public class MouseInput
         var lastPosition = _lastMouseState.Position.ToVector2();
         
         // Only recenter mouse when close to window borders to avoid setting the mouse position at a high rate.
-
         var windowSize = GlobalGameContext.Current.WindowSize;
 
         var left = windowSize * 0.1f;
@@ -63,5 +80,15 @@ public class MouseInput
 
         _lastMouseState = state;
         return position - lastPosition;
+    }
+
+    public void Pause()
+    {
+        StopCapture();
+    }
+
+    public void Resume()
+    {
+        StartCapture();
     }
 }
