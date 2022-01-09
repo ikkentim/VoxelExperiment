@@ -17,12 +17,7 @@ public class WorldRenderer
         _world.Renderer = this;
         _rendererResources = new ChunkRendererResources(textureRegistry);
     }
-
-    public void Initialize(GraphicsDevice graphicsDevice)
-    {
-        _rendererResources.Initialize(graphicsDevice);
-    }
-
+    
     public void LoadContent(ContentManager content)
     {
         _rendererResources.LoadContent(content);
@@ -36,10 +31,6 @@ public class WorldRenderer
 
     public void Draw(GraphicsDevice graphicsDevice)
     {
-        _rendererResources.BasicEffect.View = _camera.ViewMatrix;
-        _rendererResources.BasicEffect.Projection = GlobalGameContext.Current.Projection;
-        _rendererResources.BasicEffect.TextureEnabled = true;
-      
         _rendererResources.BlockFaceEffect.View = _camera.ViewMatrix;
         _rendererResources.BlockFaceEffect.Projection = GlobalGameContext.Current.Projection;
 

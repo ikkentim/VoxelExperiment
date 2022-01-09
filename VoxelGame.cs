@@ -63,6 +63,7 @@ public class VoxelGame : Game
         yield return new SolidBlock("cotton_red", "cotton_red");
         yield return new SolidBlock("cotton_tan", "cotton_tan");
         yield return new SolidBlock("dirt", "dirt");
+        yield return new GrassBlock();
     }
 
     private IEnumerable<IGameComponent> GetComponents()
@@ -84,11 +85,11 @@ public class VoxelGame : Game
 
 
         for (var x = 0; x < Chunk.Size; x++)
-        for (var y = 0; y < 2; y++)
+        for (var y = 0; y < 3; y++)
         for (var z = 0; z < Chunk.Size; z++)
-            Set(x, y, z, "test");
+            Set(x, y, z, y == 2 ? "grass" : "dirt");
 
-        Set(7, 2, 7, "cobblestone");
+        Set(7, 3, 7, "cobblestone");
         Set(7, 7, 7, "cobblestone");
         
         Set(7, 7, 8, "dirt");

@@ -221,9 +221,7 @@ public class GreedyMeshGenerator
         {
             faceTopRight += normal;
         }
-
-        Debug.WriteLine("Adding face at {0} {1}", faceTopRight, blockFace);
-            
+        
         VertexPositionBlockFace ToVertex(Vector2 uv)
         {
             var position = faceTopRight + (cross * -(1 - uv.X) + up * -uv.Y) * faceSize;

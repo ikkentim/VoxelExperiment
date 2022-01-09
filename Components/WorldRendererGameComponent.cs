@@ -11,14 +11,7 @@ public class WorldRendererGameComponent : DrawableGameComponent
     {
         _renderer = new WorldRenderer(game.WorldManager, game.Camera, game.TextureRegistry);
     }
-
-    public override void Initialize()
-    {
-        _renderer.Initialize(GraphicsDevice);
-
-        base.Initialize();
-    }
-
+    
     protected override void LoadContent()
     {
         _renderer.LoadContent(Game.Content);
