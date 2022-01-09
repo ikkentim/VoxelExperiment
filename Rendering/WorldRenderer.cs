@@ -40,6 +40,9 @@ public class WorldRenderer
         _rendererResources.BasicEffect.Projection = GlobalGameContext.Current.Projection;
         _rendererResources.BasicEffect.TextureEnabled = true;
       
+        _rendererResources.NewEffect.View = _camera.ViewMatrix;
+        _rendererResources.NewEffect.Projection = GlobalGameContext.Current.Projection;
+
         var chunks = _world.GetLoadedChunks();
 
         foreach (var chunk in chunks)

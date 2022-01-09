@@ -11,19 +11,20 @@ Texture2D<float4> Texture : register(t0);
 sampler TextureSampler : register(s0);
 
 matrix WorldViewProjection;
-float2 TextureUv;
 float2 TextureSize;
 
 struct VSInput
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD0;
+    float2 TextureBase   : TEXCOORD1;
 };
 
 struct VSOutput
 {
     float4 PositionPS : SV_Position;
     float2 TexCoord   : TEXCOORD0;
+    float2 TextureBase   : TEXCOORD1;
 };
 
 VSOutput MainVS(VSInput vin)
@@ -31,8 +32,9 @@ VSOutput MainVS(VSInput vin)
     VSOutput vout;
     
     vout.PositionPS = mul(vin.Position, WorldViewProjection);
-
+    
     vout.TexCoord = vin.TexCoord;
+    vout.TextureBase = vin.TextureBase;
 
     return vout;
 }
@@ -40,8 +42,8 @@ VSOutput MainVS(VSInput vin)
 float4 MainPS(VSOutput pin) : SV_Target0
 {
     float2 texCoord;
-    texCoord.x = (pin.TexCoord.x % 1) * TextureSize.x + TextureUv.x;
-    texCoord.y = (pin.TexCoord.y % 1) * TextureSize.y + TextureUv.y;
+    texCoord.x = (pin.TexCoord.x % 1) * TextureSize.x + pin.TextureBase.x;
+    texCoord.y = (pin.TexCoord.y % 1) * TextureSize.y + pin.TextureBase.y;
     
     return Texture.Sample(TextureSampler, texCoord);
 }

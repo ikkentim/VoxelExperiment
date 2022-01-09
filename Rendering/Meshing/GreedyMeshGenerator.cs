@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Data;
 using MyGame.Extensions;
+using MyGame.Rendering.Vertices;
 using MyGame.World;
 
 namespace MyGame.Rendering.Meshing;
@@ -14,7 +15,9 @@ public class GreedyMeshGenerator
     private readonly Chunk _chunk;
     private readonly TextureRegistry _textureRegistry;
     private readonly bool _isLines;
-    private readonly Dictionary<Texture2D, BufferGenerator<VertexPositionTexture>> _bufferPerAtlas = new();
+    private readonly Dictionary<Texture2D, AtlasBuffer> _bufferPerAtlas = new();
+
+    private record AtlasBuffer(BufferGenerator<VertexPositionBlockFace> Buffer, Vector2 TextureSize);
 
     public GreedyMeshGenerator(Chunk chunk, TextureRegistry textureRegistry, bool isLines)
     {
@@ -29,7 +32,7 @@ public class GreedyMeshGenerator
     {
         foreach (var kv in _bufferPerAtlas)
         {
-            kv.Value.Clear();
+            kv.Value.Buffer.Clear();
         }
             
         for (var depth = 0; depth < Chunk.Size; depth++)
@@ -40,18 +43,19 @@ public class GreedyMeshGenerator
 
         var parts = new List<ChunkMesh.MeshPart>(_bufferPerAtlas.Count);
 
-        foreach (var (texture, buffers) in _bufferPerAtlas)
+        foreach (var (texture, atlasBuffer) in _bufferPerAtlas)
         {
-            if (!buffers.IsEmpty)
+            if (!atlasBuffer.Buffer.IsEmpty)
             {
-                var (indexBuffer, vertexBuffer) = buffers.GetBuffers(graphicsDevice);
+                var (indexBuffer, vertexBuffer) = atlasBuffer.Buffer.GetBuffers(graphicsDevice);
 
                 parts.Add(new ChunkMesh.MeshPart
                 {
                     Texture = texture,
                     IndexBuffer = indexBuffer,
                     VertexBuffer = vertexBuffer,
-                    PrimitiveCount = buffers.PrimitiveCount
+                    PrimitiveCount = atlasBuffer.Buffer.PrimitiveCount,
+                    TextureSize = atlasBuffer.TextureSize
                 });
             }
         }
@@ -166,12 +170,18 @@ public class GreedyMeshGenerator
         }
         
         var textureReference = _textureRegistry.GetTexture(sourceTexture);
-        var buffer = _bufferPerAtlas.GetOrAdd(textureReference.Texture);
+
+        if (!_bufferPerAtlas.TryGetValue(textureReference.Texture, out var buffer))
+        {
+            _bufferPerAtlas[textureReference.Texture] = 
+                buffer = new AtlasBuffer(new BufferGenerator<VertexPositionBlockFace>(), textureReference.UvSize);
+            
+        }
         
-        AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
+        AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer.Buffer, textureReference);
     }
 
-    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, BufferGenerator<VertexPositionTexture> buffer, TextureAtlasReference textureReference)
+    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, BufferGenerator<VertexPositionBlockFace> buffer, TextureAtlasReference textureReference)
     {
         var lenI = maxI - i + 1;
         var lenJ = maxJ - j + 1;
@@ -200,17 +210,17 @@ public class GreedyMeshGenerator
             faceTopRight += normal;
         }
             
-        VertexPositionTexture ToVertex(Vector2 uv)
+        VertexPositionBlockFace ToVertex(Vector2 uv)
         {
             var position = faceTopRight + (cross * -(1 - uv.X) + up * -uv.Y) * faceSize;
 
             uv.X = 1 - uv.X; // invert x for now...
             uv *= size;
 
-            uv *= textureReference.UvSize;
-            uv += textureReference.Uv;
+            //uv *= textureReference.UvSize;
+            //uv += textureReference.Uv;
 
-            return new VertexPositionTexture(position, uv);
+            return new VertexPositionBlockFace(position, uv, textureReference.Uv);
         }
             
         if (_isLines)

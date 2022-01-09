@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Components;
+using MyGame.Rendering.Effects;
 
 namespace MyGame.Rendering;
 
@@ -10,6 +11,8 @@ public class ChunkRendererResources
     private BasicEffect? _basicEffect;
     
     public BasicEffect BasicEffect => _basicEffect!;
+
+    public BlockFaceEffect NewEffect => _newEffect;
 
     public TextureRegistry TextureRegistry { get; }
 

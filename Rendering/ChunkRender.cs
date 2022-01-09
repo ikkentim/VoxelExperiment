@@ -39,7 +39,8 @@ public class ChunkRender : IChunkRenderer
         graphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
 
         _rendererResources.BasicEffect.World = Matrix.CreateTranslation(_chunk.WorldPosition);
+        _rendererResources.NewEffect.World = Matrix.CreateTranslation(_chunk.WorldPosition);
 
-        _mesh!.Render(graphicsDevice, _rendererResources.BasicEffect);
+        _mesh!.Render(graphicsDevice, _rendererResources);
     }
 }
