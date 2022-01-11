@@ -19,6 +19,6 @@ public class ChunkRendererResources
     
     public void LoadContent(ContentManager content)
     {
-        _blockFaceEffect = new BlockFaceEffect(content.Load<Effect>("BlockFaceEffect"));
+        _blockFaceEffect = new BlockFaceEffect(content.Load<Effect>("Effects/BlockFaceEffect"));
     }
 }

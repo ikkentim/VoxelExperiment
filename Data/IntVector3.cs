@@ -46,6 +46,8 @@ public struct IntVector3 : IEquatable<IntVector3>
         return $"{{X:{X} Y:{Y} Z:{Z}}}";
     }
 
+    public static IntVector3 FromVector(Vector3 vec) => new((int)vec.X, (int)vec.Y, (int)vec.Z);
+
     public static Vector3 operator *(IntVector3 vec, float scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
     public static IntVector3 operator *(IntVector3 vec, int scalar) => new(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
 

@@ -9,7 +9,7 @@ namespace MyGame.Rendering;
 
 public class ChunkRender : IChunkRenderer
 {
-    private const bool RenderMeshLines = false; // generate line meshes instead of texture meshes
+    private const bool RenderMeshLines = true; // generate line meshes instead of texture meshes
 
     private readonly GreedyMeshGenerator _meshGenerator;
     private readonly Chunk _chunk;

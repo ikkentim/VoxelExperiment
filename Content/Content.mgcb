@@ -13,12 +13,6 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin BlockFaceEffect.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:BlockFaceEffect.fx
-
 #begin debugfont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -26,9 +20,21 @@
 /processorParam:TextureFormat=Compressed
 /build:debugfont.spritefont
 
-#begin EmptyEffect.fx
+#begin Effects/BlockFaceEffect.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:EmptyEffect.fx
+/build:Effects/BlockFaceEffect.fx
+
+#begin Effects/BlockSelectionEffect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/BlockSelectionEffect.fx
+
+#begin Effects/EmptyEffect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/EmptyEffect.fx
 
