@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.Debugging;
 
 namespace MyGame.Rendering.Meshing;
 
@@ -15,6 +16,9 @@ public class ChunkMesh
 
     public void Render(GraphicsDevice graphicsDevice, ChunkRendererResources resources)
     {
+        var calls = 0;
+
+        PerformanceCounters.Drawing.StartMeasurement("chunk_mesh_render");
         foreach (var part in _parts)
         {
             graphicsDevice.Indices = part.IndexBuffer;
@@ -27,6 +31,7 @@ public class ChunkMesh
             {
                 pass.Apply();
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.PrimitiveCount);
+                calls++;
             }
             
             if (part.LineVertexBuffer != null)
@@ -42,11 +47,16 @@ public class ChunkMesh
                 {
                     pass.Apply();
                     graphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineList, 0, 0, part.LinePrimitiveCount);
+                    calls++;
                 }
 
                 resources.BlockFaceEffect.DrawLines = false;
             }
         }
+
+        PerformanceCounters.Drawing.StopMeasurement();
+
+        PerformanceCounters.Drawing.Add("draw", calls);
     }
 
     public struct MeshPart

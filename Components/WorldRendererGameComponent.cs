@@ -14,7 +14,7 @@ public class WorldRendererGameComponent : DrawableGameComponent
     
     protected override void LoadContent()
     {
-        _renderer.LoadContent(Game.Content);
+        _renderer.LoadContent((VoxelGame)Game);
     }
 
     public override void Draw(GameTime gameTime)

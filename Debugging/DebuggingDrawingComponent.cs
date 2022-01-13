@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.Debugging;
 using MyGame.Extensions;
-using MyGame.Rendering;
 
 namespace MyGame.Components;
 
@@ -15,6 +15,7 @@ public class DebuggingDrawingComponent : DrawableGameComponent
     private readonly VertexBuffer _vertexBuffer;
     private SpriteFont? _font;
     private readonly SpriteBatch _spriteBatch;
+    private float _time;
 
     public DebuggingDrawingComponent(Game game) : base(game)
     {
@@ -43,16 +44,14 @@ public class DebuggingDrawingComponent : DrawableGameComponent
 
     protected override void LoadContent()
     {
-        _font = Game.Content.Load<SpriteFont>("debugfont");
+        _font = Game.AssetManager.GetDebugFont();
     }
     
-    private float _time = 0;
-
     public override void Draw(GameTime gameTime) => Draw(gameTime.GetDeltaTime());
 
     public void Draw(float deltaTime)
     {
-        _debugEffect!.Projection = GlobalGameContext.Current.Projection;
+        _debugEffect.Projection = GlobalGameContext.Current.Projection;
 
         // axis lines in world space
         if (DrawWorldAxis)
@@ -84,7 +83,13 @@ public class DebuggingDrawingComponent : DrawableGameComponent
         _spriteBatch.Begin();
         _spriteBatch.DrawString(_font, $"FPS: {(1 / _time)}", new Vector2(10, 10), Color.White, 0, Vector2.Zero, Vector2.One,
             SpriteEffects.None, 0);
+        
+        
+        _spriteBatch.DrawString(_font, PerformanceCounters.Drawing.GetText() + PerformanceCounters.Update.GetText() + PerformanceCounters.Cumulative.GetText(), new Vector2(10, 50), Color.White, 0, Vector2.Zero, Vector2.One,
+            SpriteEffects.None, 0);
         _spriteBatch.End();
+
+        PerformanceCounters.Drawing.Reset();
         
         // reset DepthStencil state after drawing 2d
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;

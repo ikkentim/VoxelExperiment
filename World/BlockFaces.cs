@@ -66,4 +66,27 @@ public static class BlockFaces
             _ => throw new ArgumentOutOfRangeException(nameof(blockFace), blockFace, null)
         };
     }
+
+    public static BlockFace GetFace(IntVector3 normal)
+    {
+        if (normal == IntVector3.Zero)
+        {
+            return BlockFace.None;
+        }
+
+        if (normal.X == 0 && normal.Y == 0)
+        {
+            return normal.Z < 0 ? BlockFace.North : BlockFace.South;
+        }
+        if (normal.X == 0 && normal.Z == 0)
+        {
+            return normal.Y < 0 ? BlockFace.Bottom : BlockFace.Top;
+        }
+        if (normal.Y == 0 && normal.Z == 0)
+        {
+            return normal.X < 0 ? BlockFace.West : BlockFace.East;
+        }
+
+        return BlockFace.None;
+    }
 }

@@ -36,7 +36,7 @@ public class WorldManager
             return ref _badAirBlock;
         }
 
-        var localPosition = position - chunkPosition;
+        var localPosition = position - chunk.WorldPosition;
         ref var blockData = ref chunk.GetBlock(localPosition);
 
         return ref blockData;

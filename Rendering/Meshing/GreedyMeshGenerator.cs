@@ -202,13 +202,8 @@ public class GreedyMeshGenerator
         var faceSize = GetPosition(blockFace, 0, lenI, lenJ);
         var normal = BlockFaces.GetNormal(blockFace);
         var up = BlockFaces.GetUp(blockFace);
-            
         var cross = Vector3.Cross(normal, up);
-        var absCross = new Vector3(
-            MathF.Abs(cross.X),
-            MathF.Abs(cross.Y),
-            MathF.Abs(cross.Z)
-        );
+        var absCross = VectorHelper.Abs(cross);
 
         var faceTopRight = localPos
                            // Get center

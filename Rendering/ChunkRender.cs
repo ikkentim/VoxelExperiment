@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Data;
+using MyGame.Debugging;
 using MyGame.Rendering.Meshing;
 using MyGame.World;
 
@@ -25,7 +26,9 @@ public class ChunkRender : IChunkRenderer
 
     public void Initialize(GraphicsDevice graphicsDevice)
     {
+        PerformanceCounters.Cumulative.StartMeasurement("mesh_gen");
         _mesh = _meshGenerator.Create(graphicsDevice);
+        PerformanceCounters.Cumulative.StopMeasurement();
     }
 
     public void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock)

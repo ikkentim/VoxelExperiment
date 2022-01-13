@@ -5,10 +5,11 @@ using MyGame.Extensions;
 
 namespace MyGame.Components;
 
-public class PlayerControllerComponent : GameComponent
+public class PlayerControllerComponent : DrawableGameComponent
 {
     private bool _escape;
     private readonly PlayerController _playerController;
+    private RayHitInfo _lookingAtBlock;
 
     public PlayerControllerComponent(VoxelGame game) : base(game)
     {
@@ -27,6 +28,13 @@ public class PlayerControllerComponent : GameComponent
         _playerController.Update(gameTime.GetDeltaTime());
 
         HandleExitAndMouseCapture();
+
+        HandleLookingAtBlock();
+    }
+
+    private void HandleLookingAtBlock()
+    {
+        _lookingAtBlock = Game.Camera.Transform.Ray.Cast(100f, Game.WorldManager);
     }
     
     private void HandleExitAndMouseCapture()
@@ -63,5 +71,15 @@ public class PlayerControllerComponent : GameComponent
         {
             _playerController.ResumeCaptureMouse();
         }
+    }
+
+    public override void Draw(GameTime gameTime)
+    {
+        if (_lookingAtBlock.IsHit)
+        {
+            Game.BlockOutlineRenderer.Render(_lookingAtBlock.Position, _lookingAtBlock.Block);
+        }
+
+        base.Draw(gameTime);
     }
 }

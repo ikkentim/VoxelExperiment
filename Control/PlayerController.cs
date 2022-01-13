@@ -1,7 +1,10 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MyGame.Components;
 using MyGame.Platform;
 using MyGame.Rendering;
+using MyGame.Rendering.Effects;
 
 namespace MyGame.Control;
 
@@ -9,14 +12,14 @@ public class PlayerController
 {
     private static readonly float LookPitchLimit = MathHelper.ToRadians(75);
     private readonly Camera _camera;
-    
+
     private Vector2 _look = new(-MathHelper.PiOver2, 0);
     private Vector3 _position = Vector3.Zero;
-    
+
     private readonly IRawMouseInput _rawMouseInput;
     private readonly KeyboardInput _keyboardInput = new();
 
-    public PlayerController(Camera camera, Game game)
+    public PlayerController(Camera camera, VoxelGame game)
     {
         _camera = camera;
         _rawMouseInput = new WindowsRawMouseInput(game);
@@ -30,7 +33,7 @@ public class PlayerController
     {
         UpdateWalking(deltaTime);
         UpdateLooking(deltaTime);
-
+        
         var matrix =
 
             Matrix.CreateRotationX(_look.Y) *

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using MyGame.Components;
 using MyGame.Data;
+using MyGame.Debugging;
 using MyGame.Platform;
 using MyGame.Rendering;
 using MyGame.World;
@@ -19,6 +21,8 @@ public class VoxelGame : Game
 
     public BlockRegistry BlockRegistry { get; } = new();
     public TextureRegistry TextureRegistry { get; } = new();
+    public AssetManager AssetManager { get; } = new();
+    public BlockOutlineRenderer BlockOutlineRenderer { get; }
 
     public VoxelGame()
     {
@@ -27,6 +31,8 @@ public class VoxelGame : Game
         _graphics = new GraphicsDeviceManager(this);
 
         IsMouseVisible = true;
+
+        BlockOutlineRenderer = new BlockOutlineRenderer(this);
     }
     
     protected override void Initialize()
@@ -34,6 +40,9 @@ public class VoxelGame : Game
         GlobalGameContext.Initialize(this);
         
         InitializeDisplay();
+        
+        AssetManager.LoadContent(Content);
+        BlockOutlineRenderer.LoadContent();
         
         foreach (var component in GetComponents())
         {
@@ -44,7 +53,7 @@ public class VoxelGame : Game
         {
             BlockRegistry.Register(block);
         }
-
+        
         BlockRegistry.Lock();
 
         TextureRegistry.RegisterBlockTextures(BlockRegistry.GetBlockTypes());
@@ -74,9 +83,20 @@ public class VoxelGame : Game
         yield return new DebuggingDrawingComponent(this);
     }
 
-    private Chunk GetTestChunk()
+    private IEnumerable<Chunk> GetTestChunks()
     {
-        var chunk = new Chunk(WorldManager, new IntVector3(0, 0, 0));
+        for (var x = -2; x < 4; x++)
+        {
+            for (var z = -2; z < 4; z++)
+            {
+                yield return CreateTestChunk(new IntVector3(x, 0, z), 3, x == 0 && z == 0);
+            }
+        }
+    }
+
+    private Chunk CreateTestChunk(IntVector3 chunkPosition, int height, bool floaties)
+    {
+        var chunk = new Chunk(WorldManager, chunkPosition);
 
         void Set(int x, int y, int z, string block) => chunk.SetBlock(new IntVector3(x, y, z), new BlockData
         {
@@ -85,16 +105,19 @@ public class VoxelGame : Game
 
 
         for (var x = 0; x < Chunk.Size; x++)
-        for (var y = 0; y < 3; y++)
+        for (var y = 0; y < height; y++)
         for (var z = 0; z < Chunk.Size; z++)
-            Set(x, y, z, y == 2 ? "grass" : "dirt");
+            Set(x, y, z, y == height - 1 ? "grass" : "dirt");
 
-        Set(7, 3, 7, "cobblestone");
-        Set(7, 7, 7, "cobblestone");
-        
-        Set(7, 7, 8, "dirt");
-        Set(7, 7, 9, "dirt");
-        Set(7, 7, 10, "dirt");
+        if (floaties)
+        {
+            Set(7, 3, 7, "cobblestone");
+            Set(7, 7, 7, "cobblestone");
+
+            Set(7, 7, 8, "dirt");
+            Set(7, 7, 9, "dirt");
+            Set(7, 7, 10, "dirt");
+        }
 
         return chunk;
     }
@@ -106,7 +129,7 @@ public class VoxelGame : Game
 
         _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
         _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
-        // _graphics.IsFullScreen = true;
+        //_graphics.IsFullScreen = true;
         _graphics.ApplyChanges();
     }
 
@@ -115,15 +138,28 @@ public class VoxelGame : Game
         TextureRegistry.CreateTextureAtlasesAndLockRegistry(GraphicsDevice);
 
         // Load chunks after render is initialized so chunkrenderers are created.
-        WorldManager.LoadChunk(GetTestChunk());
+        foreach (var chunk in GetTestChunks())
+        {
+            WorldManager.LoadChunk(chunk);
+        }
 
         base.LoadContent();
     }
-    
+
+    protected override void Update(GameTime gameTime)
+    {
+        PerformanceCounters.Update.Reset();
+        PerformanceCounters.Update.StartMeasurement("update");
+        base.Update(gameTime);
+        PerformanceCounters.Update.StopMeasurement();
+    }
+
     protected override void Draw(GameTime gameTime)
     {
+        PerformanceCounters.Drawing.StartMeasurement("draw");
         GraphicsDevice.Clear(Color.CornflowerBlue);
         
         base.Draw(gameTime);
+        PerformanceCounters.Drawing.StopMeasurement();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using System;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.World;
 
@@ -18,9 +19,9 @@ public class WorldRenderer
         _rendererResources = new ChunkRendererResources(textureRegistry);
     }
     
-    public void LoadContent(ContentManager content)
+    public void LoadContent(VoxelGame game)
     {
-        _rendererResources.LoadContent(content);
+        _rendererResources.LoadContent(game);
     }
     
     public void ChunkLoaded(Chunk chunk)

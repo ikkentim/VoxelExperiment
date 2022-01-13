@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using MyGame.Rendering.Effects;
+﻿using MyGame.Rendering.Effects;
 
 namespace MyGame.Rendering;
 
@@ -17,8 +15,8 @@ public class ChunkRendererResources
         TextureRegistry = textureRegistry;
     }
     
-    public void LoadContent(ContentManager content)
+    public void LoadContent(VoxelGame game)
     {
-        _blockFaceEffect = new BlockFaceEffect(content.Load<Effect>("Effects/BlockFaceEffect"));
+        _blockFaceEffect = game.AssetManager.CreateBlockFaceEffect();
     }
 }

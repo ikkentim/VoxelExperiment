@@ -14,6 +14,7 @@ public class Transform
     public Vector3 Backward => Vector3.Transform(Vector3.Backward, Rotation).Normalized();
     public Vector3 Up => Vector3.Transform(Vector3.Up, Rotation).Normalized();
     public Vector3 Down => Vector3.Transform(Vector3.Down, Rotation).Normalized();
+    public Ray Ray => new(Position, Forward);
 
     public Matrix WorldToLocal
     {
@@ -21,5 +22,4 @@ public class Transform
         set => _matrix = value;
     }
     public Matrix LocalToWorld => Matrix.Invert(WorldToLocal);
-    
 }

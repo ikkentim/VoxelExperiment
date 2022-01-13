@@ -133,6 +133,11 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         base.OnApply();
     }
 
+    public override Effect Clone()
+    {
+        return new BlockFaceEffect(this);
+    }
+
     [Flags]
     private enum DirtyFlags
     {
