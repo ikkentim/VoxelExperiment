@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MyGame.Data;
+using MyGame.Rendering;
 using MyGame.World.Blocks;
 
 namespace MyGame.World;
@@ -41,9 +42,19 @@ public abstract class Block
         block.VisibleBlockFaces = faces;
     }
 
-    public virtual void OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
+    public virtual bool OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
     {
-        var flag = neighbor.Kind is null or AirBlock ? direction : BlockFace.None;
-        block.VisibleBlockFaces = (block.VisibleBlockFaces & ~direction) | flag;
+        if (neighbor.Kind is null or AirBlock)
+        {
+            var before = block.VisibleBlockFaces & direction;
+            block.VisibleBlockFaces |= direction;
+
+            return before == 0;
+        }
+        else
+        {
+            block.VisibleBlockFaces &= ~direction;
+            return false;
+        }
     }
 }

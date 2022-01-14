@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Microsoft.VisualBasic;
 using MyGame.Data;
 using MyGame.Rendering;
 using MyGame.World.Blocks;
@@ -63,15 +64,21 @@ public class Chunk : IDisposable
         if (_isLoading)
             return;
 
-        block.Kind.OnCreated(ref _blocks[localPos.X, localPos.Y, localPos.Z], ChunkPosition + localPos, World);
+        block.Kind.OnCreated(ref _blocks[localPos.X, localPos.Y, localPos.Z], WorldPosition + localPos, World);
 
         foreach (var face in BlockFaces.AllFaces)
         {
-            ref var n = ref GetNeighbor(localPos, face);
+            ref var n = ref GetNeighbor(localPos, face, out var chunk);
 
-            if (n.Kind is not null and not AirBlock)
+            if (chunk != null)
             {
-                n.Kind.OnNeighborUpdated(ref n, BlockFaces.GetOpposite(face), block, World);
+                if (n.Kind is not null and not AirBlock)
+                {
+                    if (n.Kind.OnNeighborUpdated(ref n, BlockFaces.GetOpposite(face), block, World))
+                    {
+                        chunk.Renderer?.BlockUpdated(localPos + BlockFaces.GetNormal(face) + WorldPosition - chunk.WorldPosition, default, default); // TODO: this is terrible.
+                    }
+                }
             }
         }
         
@@ -88,9 +95,9 @@ public class Chunk : IDisposable
         return ref block;
     }
 
-    public ref BlockData GetNeighbor(IntVector3 localPos, BlockFace blockFace) => ref GetNeighbor(localPos, BlockFaces.GetNormal(blockFace));
+    public ref BlockData GetNeighbor(IntVector3 localPos, BlockFace blockFace, out Chunk? chunk) => ref GetNeighbor(localPos, BlockFaces.GetNormal(blockFace), out chunk);
 
-    public ref BlockData GetNeighbor(IntVector3 localPos, IntVector3 normal)
+    public ref BlockData GetNeighbor(IntVector3 localPos, IntVector3 normal, out Chunk? chunk)
     {
         AssertPositionWithinBounds(localPos);
 
@@ -98,8 +105,15 @@ public class Chunk : IDisposable
         var relativeChunk = GetChunkPosition(localPos);
 
         if (relativeChunk == IntVector3.Zero)
+        {
+            chunk = this;
             return ref GetBlock(localPos);
+        }
 
+        // Double getting the chunk here... This method is garbage in the first place.
+        // TODO: this is horrible.
+        chunk = World.GetChunk(ChunkPosition + relativeChunk);
+        
         return ref World.GetBlock(WorldPosition + localPos);
     }
 

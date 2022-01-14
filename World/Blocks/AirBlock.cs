@@ -18,7 +18,8 @@ public class AirBlock : Block
     {
     }
 
-    public override void OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
+    public override bool OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
     {
+        return false;
     }
 }
