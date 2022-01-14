@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace MyGame.Rendering;
 
-public class BufferGenerator<T> where T : struct
+public class BufferGenerator<T> : IDisposable where T : struct
 {
     private IndexBuffer? _indexBuffer;
     private IndexElementSize _indexSize;
@@ -164,5 +165,15 @@ public class BufferGenerator<T> where T : struct
         _vertices.Clear();
         _intList?.Clear();
         _shortList?.Clear();
+
+        _primitiveCount = 0;
+    }
+
+    public void Dispose()
+    {
+        _indexBuffer?.Dispose();
+        _vertexBuffer?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

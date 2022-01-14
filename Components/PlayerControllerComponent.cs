@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using MyGame.Control;
 using MyGame.Extensions;
+using MyGame.World;
 
 namespace MyGame.Components;
 
@@ -28,8 +29,23 @@ public class PlayerControllerComponent : DrawableGameComponent
         _playerController.Update(gameTime.GetDeltaTime());
 
         HandleExitAndMouseCapture();
-
         HandleLookingAtBlock();
+
+        if (_lookingAtBlock.IsHit)
+        {
+            if (_playerController.PlaceBlock)
+            {
+
+                Game.WorldManager.SetBlock(_lookingAtBlock.Position + BlockFaces.GetNormal(_lookingAtBlock.Face), new BlockData
+                {
+                    Kind = Game.BlockRegistry.GetBlock("stone")
+                });
+            }
+            else if (_playerController.RemoveBlock)
+            {
+                Game.WorldManager.SetBlock(_lookingAtBlock.Position, default);
+            }
+        }
     }
 
     private void HandleLookingAtBlock()

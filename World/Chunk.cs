@@ -6,7 +6,7 @@ using MyGame.World.Blocks;
 
 namespace MyGame.World;
 
-public class Chunk
+public class Chunk : IDisposable
 {
     public const int Size = 16;
 
@@ -74,7 +74,7 @@ public class Chunk
                 n.Kind.OnNeighborUpdated(ref n, BlockFaces.GetOpposite(face), block, World);
             }
         }
-
+        
         block = _blocks[localPos.X, localPos.Y, localPos.Z];
         Renderer?.BlockUpdated(localPos, oldBlock, block);
     }
@@ -127,5 +127,12 @@ public class Chunk
         {
             throw new ArgumentOutOfRangeException(nameof(localPos));
         }
+    }
+
+    public void Dispose()
+    {
+        Renderer?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

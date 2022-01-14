@@ -24,17 +24,23 @@ public class ChunkRender : IChunkRenderer
         _meshGenerator = new GreedyMeshGenerator(chunk, rendererResources.TextureRegistry, RenderMeshLines);
     }
 
+    private GraphicsDevice? _graphics;
     public void Initialize(GraphicsDevice graphicsDevice)
     {
+        _graphics = graphicsDevice;
         PerformanceCounters.Cumulative.StartMeasurement("mesh_gen");
         _mesh = _meshGenerator.Create(graphicsDevice);
         PerformanceCounters.Cumulative.StopMeasurement();
     }
-
+    
     public void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock)
     {
-        // TODO
-        throw new NotImplementedException();
+        if (_graphics != null)
+        {
+            PerformanceCounters.Cumulative.StartMeasurement("mesh_gen");
+            _mesh = _meshGenerator.Create(_graphics);
+            PerformanceCounters.Cumulative.StopMeasurement();
+        }
     }
     
     public void Draw(GraphicsDevice graphicsDevice)
@@ -44,5 +50,12 @@ public class ChunkRender : IChunkRenderer
         _rendererResources.BlockFaceEffect.World = Matrix.CreateTranslation(_chunk.WorldPosition);
 
         _mesh!.Render(graphicsDevice, _rendererResources);
+    }
+    
+    public void Dispose()
+    {
+        _meshGenerator.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

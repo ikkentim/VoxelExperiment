@@ -15,7 +15,7 @@ namespace MyGame;
 public class VoxelGame : Game
 {
     public Camera Camera { get; } = new();
-    public WorldManager WorldManager { get; } = new();
+    public WorldManager WorldManager { get; }
 
     private readonly GraphicsDeviceManager _graphics;
 
@@ -33,6 +33,7 @@ public class VoxelGame : Game
         IsMouseVisible = true;
 
         BlockOutlineRenderer = new BlockOutlineRenderer(this);
+        WorldManager = new WorldManager(this);
     }
     
     protected override void Initialize()
@@ -72,6 +73,7 @@ public class VoxelGame : Game
         yield return new SolidBlock("cotton_red", "cotton_red");
         yield return new SolidBlock("cotton_tan", "cotton_tan");
         yield return new SolidBlock("dirt", "dirt");
+        yield return new SolidBlock("stone", "stone");
         yield return new GrassBlock();
     }
 

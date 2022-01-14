@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MyGame.Components;
 using MyGame.Platform;
 using MyGame.Rendering;
@@ -19,6 +20,8 @@ public class PlayerController
     private readonly IRawMouseInput _rawMouseInput;
     private readonly KeyboardInput _keyboardInput = new();
 
+    private MouseState _mouseState;
+
     public PlayerController(Camera camera, VoxelGame game)
     {
         _camera = camera;
@@ -29,10 +32,13 @@ public class PlayerController
 
     public bool IsCapturingMouse => _rawMouseInput.IsCapturing;
     
+    public bool PlaceBlock { get; private set; }
+    public bool RemoveBlock { get; private set; }
     public void Update(float deltaTime)
     {
         UpdateWalking(deltaTime);
         UpdateLooking(deltaTime);
+        UpdateClicking();
         
         var matrix =
 
@@ -74,7 +80,18 @@ public class PlayerController
         _look.X = MathHelper.WrapAngle(_look.X);
         _look.Y = MathHelper.Clamp(_look.Y, -LookPitchLimit, LookPitchLimit);
     }
-    
+
+    private void UpdateClicking()
+    {
+        var mouse = Mouse.GetState();
+
+
+        RemoveBlock = _mouseState.LeftButton == ButtonState.Released && mouse.LeftButton == ButtonState.Pressed || mouse.MiddleButton == ButtonState.Pressed;
+        PlaceBlock = _mouseState.RightButton == ButtonState.Released && mouse.RightButton == ButtonState.Pressed;
+
+        _mouseState = mouse;
+    }
+
     public void StartCaptureMouse() => _rawMouseInput.Start();
     public void PauseCaptureMouse() => _rawMouseInput.Pause();
     public void ResumeCaptureMouse() => _rawMouseInput.Resume();

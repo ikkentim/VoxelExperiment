@@ -9,7 +9,7 @@ using MyGame.World;
 
 namespace MyGame.Rendering.Meshing;
 
-public class GreedyMeshGenerator
+public class GreedyMeshGenerator : IDisposable
 {
     private readonly Chunk _chunk;
     private readonly TextureRegistry _textureRegistry;
@@ -276,5 +276,16 @@ public class GreedyMeshGenerator
         }
 
         return pos;
+    }
+
+    public void Dispose()
+    {
+        foreach (var value in _bufferPerAtlas.Values)
+        {
+            value.Buffer.Dispose();
+            value.LinesBuffer?.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
     }
 }
