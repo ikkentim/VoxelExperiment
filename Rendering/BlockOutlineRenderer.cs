@@ -9,9 +9,9 @@ namespace MyGame.Rendering;
 public class BlockOutlineRenderer
 {
     private readonly VoxelGame _game;
+    private BlockFaceEffect? _effect;
     private IndexBuffer? _indexBuffer;
     private VertexBuffer? _vertexBuffer;
-    private BlockFaceEffect? _effect;
 
     public BlockOutlineRenderer(VoxelGame game)
     {
@@ -34,7 +34,7 @@ public class BlockOutlineRenderer
             new VertexPosition(new Vector3(lo, lo, hi)),
             new VertexPosition(new Vector3(hi, lo, hi)),
             new VertexPosition(new Vector3(lo, hi, hi)),
-            new VertexPosition(new Vector3(hi, hi, hi)),
+            new VertexPosition(new Vector3(hi, hi, hi))
         });
 
         _indexBuffer.SetData(new short[]

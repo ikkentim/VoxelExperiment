@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using MyGame.Data;
-using MyGame.Rendering;
 using MyGame.World.Blocks;
 
 namespace MyGame.World;
@@ -10,13 +8,13 @@ public abstract class Block
 {
     public const string DefaultTexture = "notex";
 
+    public virtual string Name => GetType().FullName!;
+
     public virtual TextureReference GetTexture(BlockFace face) =>
         new()
         {
-            Name = DefaultTexture,
+            Name = DefaultTexture
         };
-
-    public virtual string Name => GetType().FullName!;
 
     public virtual IEnumerable<TextureReference> GetTextures()
     {
@@ -32,7 +30,7 @@ public abstract class Block
             var normal = BlockFaces.GetNormal(face);
 
             var neighbor = position + normal;
-            
+
             if (world.GetBlock(neighbor).Kind is null or AirBlock)
             {
                 faces |= face;

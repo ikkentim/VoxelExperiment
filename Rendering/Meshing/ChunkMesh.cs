@@ -8,7 +8,7 @@ namespace MyGame.Rendering.Meshing;
 public class ChunkMesh
 {
     private readonly IEnumerable<MeshPart> _parts;
-    
+
     public ChunkMesh(IEnumerable<MeshPart> parts)
     {
         _parts = parts;
@@ -26,14 +26,14 @@ public class ChunkMesh
 
             resources.BlockFaceEffect.Texture = part.Texture;
             resources.BlockFaceEffect.TextureSize = part.TextureSize;
-      
+
             foreach (var pass in resources.BlockFaceEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.PrimitiveCount);
                 calls++;
             }
-            
+
             if (part.LineVertexBuffer != null)
             {
                 graphicsDevice.Indices = part.LineIndexBuffer;
@@ -41,8 +41,8 @@ public class ChunkMesh
 
                 resources.BlockFaceEffect.DrawLines = true;
                 resources.BlockFaceEffect.LineColor = Color.White;
-                
-                
+
+
                 foreach (var pass in resources.BlockFaceEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();

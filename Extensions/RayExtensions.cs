@@ -3,17 +3,17 @@ using MyGame.Data;
 using MyGame.World;
 using MyGame.World.Blocks;
 
-namespace MyGame.Components;
+namespace MyGame.Extensions;
 
 public static class RayExtensions
 {
     public static RayHitInfo Cast(this Ray ray, float radius, WorldManager world)
     {
         // http://www.cse.yorku.ca/~amana/research/grid.pdf
-        
+
         var (origin, direction) = ray;
         direction.Normalize();
-        
+
         var voxel = VectorHelper.Floor(origin);
 
         var step = new IntVector3(

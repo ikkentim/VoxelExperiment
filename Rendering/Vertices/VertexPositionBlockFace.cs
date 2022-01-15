@@ -17,7 +17,7 @@ public struct VertexPositionBlockFace : IVertexType
     public Vector3 Position;
     public Vector2 TextureCoordinate;
     public Vector2 TextureBase;
-    
+
     public VertexPositionBlockFace(Vector3 position, Vector2 textureCoordinate, Vector2 textureBase)
     {
         Position = position;
@@ -27,7 +27,7 @@ public struct VertexPositionBlockFace : IVertexType
 
     VertexDeclaration IVertexType.VertexDeclaration => _declaration;
 
-    public bool Equals(VertexPositionBlockFace other) => Position.Equals(other.Position) && 
+    public bool Equals(VertexPositionBlockFace other) => Position.Equals(other.Position) &&
                                                          TextureCoordinate.Equals(other.TextureCoordinate) &&
                                                          TextureBase.Equals(other.TextureBase);
 

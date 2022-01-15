@@ -7,16 +7,26 @@ namespace MyGame.Rendering;
 
 public class BufferGenerator<T> : IDisposable where T : struct
 {
+    private readonly List<T> _vertices = new();
     private IndexBuffer? _indexBuffer;
     private IndexElementSize _indexSize;
-    private VertexBuffer? _vertexBuffer;
-    private List<short>? _shortList = new();
     private List<int>? _intList;
-    private readonly List<T> _vertices = new();
 
     private int _primitiveCount;
+    private List<short>? _shortList = new();
+    private VertexBuffer? _vertexBuffer;
 
     public int PrimitiveCount => _primitiveCount;
+
+    public bool IsEmpty => _vertices.Count == 0;
+
+    public void Dispose()
+    {
+        _indexBuffer?.Dispose();
+        _vertexBuffer?.Dispose();
+
+        GC.SuppressFinalize(this);
+    }
 
 
     public void AddFace(T a, T b, T c, T d)
@@ -28,7 +38,7 @@ public class BufferGenerator<T> : IDisposable where T : struct
         _vertices.Add(d);
 
         _primitiveCount += 2;
-            
+
         // a - b
         // |   |
         // c - d
@@ -40,7 +50,7 @@ public class BufferGenerator<T> : IDisposable where T : struct
                 _intList.AddRange(_shortList.Select(x => (int)x));
                 _shortList = null;
             }
-            
+
             _intList!.Add(start + 2);
             _intList.Add(start + 1);
             _intList.Add(start + 0);
@@ -68,7 +78,7 @@ public class BufferGenerator<T> : IDisposable where T : struct
         _vertices.Add(d);
 
         _primitiveCount += 5;
-            
+
         // a - b
         // |   |
         // c - d
@@ -80,7 +90,7 @@ public class BufferGenerator<T> : IDisposable where T : struct
                 _intList.AddRange(_shortList.Select(x => (int)x));
                 _shortList = null;
             }
-            
+
             _intList!.Add(start + 2);
             _intList.Add(start + 1);
             _intList.Add(start + 1);
@@ -106,8 +116,6 @@ public class BufferGenerator<T> : IDisposable where T : struct
             _shortList.Add((short)(start + 1));
         }
     }
-
-    public bool IsEmpty => _vertices.Count == 0;
 
     public (IndexBuffer, VertexBuffer) GetBuffers(GraphicsDevice graphicsDevice)
     {
@@ -167,13 +175,5 @@ public class BufferGenerator<T> : IDisposable where T : struct
         _shortList?.Clear();
 
         _primitiveCount = 0;
-    }
-
-    public void Dispose()
-    {
-        _indexBuffer?.Dispose();
-        _vertexBuffer?.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 }

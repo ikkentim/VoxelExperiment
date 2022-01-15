@@ -10,7 +10,7 @@ public class TestDrawingComponent : DrawableGameComponent
     public TestDrawingComponent(Game game) : base(game)
     {
     }
-    
+
     private new VoxelGame Game => (VoxelGame)base.Game;
 
     public override void Initialize()
@@ -19,7 +19,7 @@ public class TestDrawingComponent : DrawableGameComponent
 
         base.Initialize();
     }
-    
+
     public override void Update(GameTime gameTime)
     {
     }
@@ -34,6 +34,5 @@ public class TestDrawingComponent : DrawableGameComponent
     public override void Draw(GameTime gameTime)
     {
         var cottonBlue = Game.TextureRegistry.GetTexture("cotton_blue"); // one texture of the bigger atlas
-        
     }
 }

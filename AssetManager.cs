@@ -8,6 +8,7 @@ public class AssetManager
 {
     private BlockFaceEffect? _blockFaceEffectPrefab;
     private SpriteFont? _debugFont;
+
     public void LoadContent(ContentManager content)
     {
         _blockFaceEffectPrefab = new BlockFaceEffect(content.Load<Effect>("Effects/BlockFaceEffect"));

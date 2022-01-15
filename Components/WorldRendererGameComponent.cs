@@ -11,7 +11,7 @@ public class WorldRendererGameComponent : DrawableGameComponent
     {
         _renderer = new WorldRenderer(game.WorldManager, game.Camera, game.TextureRegistry);
     }
-    
+
     protected override void LoadContent()
     {
         _renderer.LoadContent((VoxelGame)Game);

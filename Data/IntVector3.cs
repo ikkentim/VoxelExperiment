@@ -10,7 +10,7 @@ public struct IntVector3 : IEquatable<IntVector3>
     public int X;
     public int Y;
     public int Z;
-    
+
     public IntVector3(int x, int y, int z)
     {
         X = x;
@@ -52,7 +52,7 @@ public struct IntVector3 : IEquatable<IntVector3>
     public static Vector3 operator /(IntVector3 vec, float scalar) => new(vec.X / scalar, vec.Y / scalar, vec.Z / scalar);
 
     public static IntVector3 operator +(IntVector3 lhs, IntVector3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
-    
+
     public static IntVector3 operator -(IntVector3 lhs, IntVector3 rhs) => new(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
 
     public static IntVector3 operator -(IntVector3 vec) => new(-vec.X, -vec.Y, -vec.Z);

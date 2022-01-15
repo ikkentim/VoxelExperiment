@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Microsoft.VisualBasic;
 using MyGame.Data;
 using MyGame.Rendering;
 using MyGame.World.Blocks;
@@ -11,20 +10,27 @@ public class Chunk : IDisposable
 {
     public const int Size = 16;
 
+    private readonly BlockData[,,] _blocks = new BlockData[Size, Size, Size];
+
     private bool _isLoading = true;
-    
-    private readonly BlockData[,,] _blocks = new BlockData[Size,Size,Size];
-    
+
     public Chunk(WorldManager world, IntVector3 chunkPosition)
     {
         World = world;
         ChunkPosition = chunkPosition;
     }
-    
+
     public WorldManager World { get; }
     public IntVector3 ChunkPosition { get; }
     public IntVector3 WorldPosition => ChunkPosition * Size;
     public IChunkRenderer? Renderer { get; set; }
+
+    public void Dispose()
+    {
+        Renderer?.Dispose();
+
+        GC.SuppressFinalize(this);
+    }
 
     public void OnLoaded()
     {
@@ -76,12 +82,13 @@ public class Chunk : IDisposable
                 {
                     if (n.Kind.OnNeighborUpdated(ref n, BlockFaces.GetOpposite(face), block, World))
                     {
-                        chunk.Renderer?.BlockUpdated(localPos + BlockFaces.GetNormal(face) + WorldPosition - chunk.WorldPosition, default, default); // TODO: this is terrible.
+                        chunk.Renderer?.BlockUpdated(localPos + BlockFaces.GetNormal(face) + WorldPosition - chunk.WorldPosition, default,
+                            default); // TODO: this is terrible.
                     }
                 }
             }
         }
-        
+
         block = _blocks[localPos.X, localPos.Y, localPos.Z];
         Renderer?.BlockUpdated(localPos, oldBlock, block);
     }
@@ -95,7 +102,8 @@ public class Chunk : IDisposable
         return ref block;
     }
 
-    public ref BlockData GetNeighbor(IntVector3 localPos, BlockFace blockFace, out Chunk? chunk) => ref GetNeighbor(localPos, BlockFaces.GetNormal(blockFace), out chunk);
+    public ref BlockData GetNeighbor(IntVector3 localPos, BlockFace blockFace, out Chunk? chunk) =>
+        ref GetNeighbor(localPos, BlockFaces.GetNormal(blockFace), out chunk);
 
     public ref BlockData GetNeighbor(IntVector3 localPos, IntVector3 normal, out Chunk? chunk)
     {
@@ -113,14 +121,14 @@ public class Chunk : IDisposable
         // Double getting the chunk here... This method is garbage in the first place.
         // TODO: this is horrible.
         chunk = World.GetChunk(ChunkPosition + relativeChunk);
-        
+
         return ref World.GetBlock(WorldPosition + localPos);
     }
 
     private static int GetChunkPositionComponent(int component)
     {
         var chunkComponent = component / Size;
-        
+
         // offset by 1 for negative values
         if (component < 0 && component % Size != 0)
             chunkComponent--;
@@ -133,7 +141,7 @@ public class Chunk : IDisposable
             GetChunkPositionComponent(position.X),
             GetChunkPositionComponent(position.Y),
             GetChunkPositionComponent(position.Z));
-    
+
     [Conditional("DEBUG")]
     private static void AssertPositionWithinBounds(IntVector3 localPos)
     {
@@ -141,12 +149,5 @@ public class Chunk : IDisposable
         {
             throw new ArgumentOutOfRangeException(nameof(localPos));
         }
-    }
-
-    public void Dispose()
-    {
-        Renderer?.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 }

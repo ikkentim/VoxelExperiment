@@ -10,7 +10,7 @@ public class PerformanceCounter
 {
     private readonly Dictionary<string, int> _counters = new();
     private readonly Dictionary<string, TimeSpan> _measurements = new();
-    private readonly Stack<(string,long)> _runningMeasurements = new(16);
+    private readonly Stack<(string, long)> _runningMeasurements = new(16);
     private readonly StringBuilder _stringBuilder = new();
 
     [Conditional("DEBUG")]
@@ -18,7 +18,6 @@ public class PerformanceCounter
     {
         _counters.TryGetValue(key, out var value);
         _counters[key] = value + count;
-        
     }
 
     [Conditional("DEBUG")]
@@ -26,14 +25,14 @@ public class PerformanceCounter
     {
         _runningMeasurements.Push((name, Stopwatch.GetTimestamp()));
     }
-    
+
     [Conditional("DEBUG")]
     public void StopMeasurement()
     {
         var end = Stopwatch.GetTimestamp();
 
         var (name, start) = _runningMeasurements.Pop();
-        
+
         _measurements.TryGetValue(name, out var value);
         var time = TimeSpan.FromTicks(end - start);
 
@@ -48,6 +47,7 @@ public class PerformanceCounter
             _stringBuilder.Append(": ");
             _stringBuilder.AppendLine(value.ToString());
         }
+
         _stringBuilder.AppendLine();
 
         foreach (var (key, value) in _measurements)
@@ -61,7 +61,7 @@ public class PerformanceCounter
         _stringBuilder.Clear();
         return result;
     }
-    
+
     [Conditional("DEBUG")]
     public void Reset()
     {

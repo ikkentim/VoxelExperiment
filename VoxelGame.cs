@@ -12,15 +12,7 @@ namespace MyGame;
 
 public class VoxelGame : Game
 {
-    public Camera Camera { get; } = new();
-    public WorldManager WorldManager { get; }
-
     private readonly GraphicsDeviceManager _graphics;
-
-    public BlockRegistry BlockRegistry { get; } = new();
-    public TextureRegistry TextureRegistry { get; } = new();
-    public AssetManager AssetManager { get; } = new();
-    public BlockOutlineRenderer BlockOutlineRenderer { get; }
 
     public VoxelGame()
     {
@@ -33,16 +25,24 @@ public class VoxelGame : Game
         BlockOutlineRenderer = new BlockOutlineRenderer(this);
         WorldManager = new WorldManager(this);
     }
-    
+
+    public Camera Camera { get; } = new();
+    public WorldManager WorldManager { get; }
+
+    public BlockRegistry BlockRegistry { get; } = new();
+    public TextureRegistry TextureRegistry { get; } = new();
+    public AssetManager AssetManager { get; } = new();
+    public BlockOutlineRenderer BlockOutlineRenderer { get; }
+
     protected override void Initialize()
     {
         GlobalGameContext.Initialize(this);
-        
+
         InitializeDisplay();
-        
+
         AssetManager.LoadContent(Content);
         BlockOutlineRenderer.LoadContent();
-        
+
         foreach (var component in GetComponents())
         {
             Components.Add(component);
@@ -52,11 +52,11 @@ public class VoxelGame : Game
         {
             BlockRegistry.Register(block);
         }
-        
+
         BlockRegistry.Lock();
 
         TextureRegistry.RegisterBlockTextures(BlockRegistry.GetBlockTypes());
-        
+
         base.Initialize();
     }
 
@@ -82,11 +82,11 @@ public class VoxelGame : Game
         yield return new TestDrawingComponent(this);
         yield return new DebuggingDrawingComponent(this);
     }
-    
+
     private void InitializeDisplay()
     {
         TargetElapsedTime = TimeSpan.FromMilliseconds(1);
-        MaxElapsedTime = TimeSpan.FromMilliseconds(1000f/30);
+        MaxElapsedTime = TimeSpan.FromMilliseconds(1000f / 30);
 
         _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
         _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
@@ -116,7 +116,7 @@ public class VoxelGame : Game
     {
         PerformanceCounters.Drawing.StartMeasurement("draw");
         GraphicsDevice.Clear(Color.CornflowerBlue);
-        
+
         base.Draw(gameTime);
         PerformanceCounters.Drawing.StopMeasurement();
     }

@@ -4,7 +4,7 @@ namespace MyGame.World;
 
 public class WorldProvider
 {
-    private IWorldGenerator _generator = new FlatWorldGenerator();
+    private readonly IWorldGenerator _generator = new FlatWorldGenerator();
 
     public Chunk GetChunk(BlockRegistry blockRegistry, WorldManager world, IntVector3 chunkPosition)
     {

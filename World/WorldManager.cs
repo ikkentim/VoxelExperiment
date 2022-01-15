@@ -7,32 +7,32 @@ namespace MyGame.World;
 
 public class WorldManager
 {
+    private readonly Dictionary<IntVector3, Chunk> _chunkByPosition = new();
+    private readonly List<Chunk> _loadedChunks = new();
     private readonly VoxelGame _voxelGame;
+
+    private readonly WorldProvider _worldProvider = new();
 
     private BlockData _badAirBlock = new()
     {
         Kind = AirBlock.Instance
     };
 
-    private readonly WorldProvider _worldProvider = new();
-    private readonly List<Chunk> _loadedChunks = new();
-    private readonly Dictionary<IntVector3, Chunk> _chunkByPosition = new();
-
     private IntVector3? _loadedChunkPosition = null;
-
-    public WorldRenderer? Renderer { get; set; }
 
     public WorldManager(VoxelGame voxelGame)
     {
         _voxelGame = voxelGame;
     }
 
+    public WorldRenderer? Renderer { get; set; }
+
     public Chunk? GetChunk(IntVector3 position)
     {
         _chunkByPosition.TryGetValue(position, out var chunk);
         return chunk;
     }
-    
+
     public ref BlockData GetBlock(IntVector3 position)
     {
         var chunkPosition = Chunk.GetChunkPosition(position);
@@ -72,15 +72,15 @@ public class WorldManager
     {
         return _loadedChunks;
     }
-    
+
     public void LoadChunk(Chunk chunk)
     {
         _loadedChunks.Add(chunk);
         _chunkByPosition[chunk.ChunkPosition] = chunk;
-        
+
         chunk.OnLoaded();
 
-        Renderer?.ChunkLoaded(chunk); 
+        Renderer?.ChunkLoaded(chunk);
     }
 
     public void UnloadChunk(Chunk chunk)
@@ -110,7 +110,7 @@ public class WorldManager
 
             _loadedChunkPosition = playerChunkLocation;
         }
-        else if(_loadedChunkPosition != playerChunkLocation)
+        else if (_loadedChunkPosition != playerChunkLocation)
         {
             // TODO unload old
 

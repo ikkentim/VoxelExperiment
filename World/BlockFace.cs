@@ -8,32 +8,32 @@ public enum BlockFace : byte
     None = 0,
 
     /// <summary>
-    /// X+, Right
+    ///     X+, Right
     /// </summary>
     East = 1,
 
     /// <summary>
-    /// X- Left
+    ///     X- Left
     /// </summary>
     West = 2,
 
     /// <summary>
-    /// Y+, Up
+    ///     Y+, Up
     /// </summary>
     Top = 4,
 
     /// <summary>
-    /// Y-, Down
+    ///     Y-, Down
     /// </summary>
     Bottom = 8,
 
     /// <summary>
-    /// Z+, Backward
+    ///     Z+, Backward
     /// </summary>
     South = 16,
 
     /// <summary>
-    /// Z-, Forward
+    ///     Z-, Forward
     /// </summary>
-    North = 32,
+    North = 32
 }

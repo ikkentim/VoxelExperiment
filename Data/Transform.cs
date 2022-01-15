@@ -21,5 +21,6 @@ public class Transform
         get => _matrix;
         set => _matrix = value;
     }
+
     public Matrix LocalToWorld => Matrix.Invert(WorldToLocal);
 }

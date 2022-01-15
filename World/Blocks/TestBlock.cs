@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace MyGame.World.Blocks;
+﻿namespace MyGame.World.Blocks;
 
 public class TestBlock : SolidBlock
 {

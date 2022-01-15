@@ -5,8 +5,8 @@ namespace MyGame.World;
 
 public class BlockRegistry
 {
-    private bool _isLocked;
     private readonly Dictionary<string, Block> _blockTypes = new();
+    private bool _isLocked;
 
     public void Register(Block block)
     {

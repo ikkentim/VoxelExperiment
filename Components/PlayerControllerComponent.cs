@@ -8,8 +8,8 @@ namespace MyGame.Components;
 
 public class PlayerControllerComponent : DrawableGameComponent
 {
-    private bool _escape;
     private readonly PlayerController _playerController;
+    private bool _escape;
     private RayHitInfo _lookingAtBlock;
 
     public PlayerControllerComponent(VoxelGame game) : base(game)
@@ -35,7 +35,6 @@ public class PlayerControllerComponent : DrawableGameComponent
         {
             if (_playerController.PlaceBlock)
             {
-
                 Game.WorldManager.SetBlock(_lookingAtBlock.Position + BlockFaces.GetNormal(_lookingAtBlock.Face), new BlockData
                 {
                     Kind = Game.BlockRegistry.GetBlock("stone")
@@ -52,7 +51,7 @@ public class PlayerControllerComponent : DrawableGameComponent
     {
         _lookingAtBlock = Game.Camera.Transform.Ray.Cast(20f, Game.WorldManager);
     }
-    
+
     private void HandleExitAndMouseCapture()
     {
         var kb = Keyboard.GetState();

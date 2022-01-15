@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.World;
 using Color = Microsoft.Xna.Framework.Color;
-using Image = System.Drawing.Image;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace MyGame.Rendering;
@@ -17,11 +15,11 @@ namespace MyGame.Rendering;
 public class TextureRegistry
 {
     private const int AtlasWithInTextures = 16;
+    private readonly Dictionary<string, TextureAtlasReference> _assocTable = new();
+    private readonly List<string> _registeredTextures = new();
 
     private bool _isLocked;
-    private readonly List<string> _registeredTextures = new();
-    private readonly Dictionary<string, TextureAtlasReference> _assocTable = new();
-    
+
     public void Register(string name)
     {
         if (_isLocked)
@@ -62,7 +60,7 @@ public class TextureRegistry
     {
         _isLocked = true;
         _assocTable.Clear();
-        
+
         foreach (var textureGroup in GetTexturesToAddToTable().GroupBy(x => x.image.Size.Width))
         {
             var width = textureGroup.Key;
@@ -84,13 +82,13 @@ public class TextureRegistry
 
             var index = 0;
             var uvSize = new Vector2(width, width) / new Vector2(atlasWidth, atlasHeight);
-            
+
             foreach (var (name, image) in images)
             {
                 var bmp = WriteImageToBuffer(image, width, imageBuffer);
 
                 bmp.Dispose();
-                
+
                 var indexX = index % AtlasWithInTextures;
                 var indexY = index / AtlasWithInTextures;
                 var tilePosX = indexX * width;

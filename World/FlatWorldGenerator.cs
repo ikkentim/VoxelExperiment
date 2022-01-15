@@ -14,7 +14,7 @@ public class FlatWorldGenerator : IWorldGenerator
             {
                 Kind = blockRegistry.GetBlock(block)
             });
-            
+
             const int height = 4;
             for (var x = 0; x < Chunk.Size; x++)
             for (var y = 0; y < height; y++)

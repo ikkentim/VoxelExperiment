@@ -2,12 +2,12 @@
 using MyGame.Data;
 using MyGame.World;
 
-namespace MyGame.Components;
+namespace MyGame.Extensions;
 
 public struct RayHitInfo
 {
     public static readonly RayHitInfo Empty = new();
-    
+
     public RayHitInfo(bool isHit, float distance, BlockData block, IntVector3 position, Vector3 hitPosition, BlockFace face)
     {
         IsHit = isHit;

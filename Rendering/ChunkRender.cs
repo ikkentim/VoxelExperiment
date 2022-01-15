@@ -11,10 +11,12 @@ namespace MyGame.Rendering;
 public class ChunkRender : IChunkRenderer
 {
     private const bool RenderMeshLines = false; // generate line meshes instead of texture meshes
+    private readonly Chunk _chunk;
 
     private readonly GreedyMeshGenerator _meshGenerator;
-    private readonly Chunk _chunk;
     private readonly ChunkRendererResources _rendererResources;
+
+    private GraphicsDevice? _graphics;
     private ChunkMesh? _mesh;
 
     public ChunkRender(Chunk chunk, ChunkRendererResources rendererResources)
@@ -24,7 +26,6 @@ public class ChunkRender : IChunkRenderer
         _meshGenerator = new GreedyMeshGenerator(chunk, rendererResources.TextureRegistry, RenderMeshLines);
     }
 
-    private GraphicsDevice? _graphics;
     public void Initialize(GraphicsDevice graphicsDevice)
     {
         _graphics = graphicsDevice;
@@ -32,7 +33,7 @@ public class ChunkRender : IChunkRenderer
         _mesh = _meshGenerator.Create(graphicsDevice);
         PerformanceCounters.Cumulative.StopMeasurement();
     }
-    
+
     public void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock)
     {
         if (_graphics != null)
@@ -42,16 +43,16 @@ public class ChunkRender : IChunkRenderer
             PerformanceCounters.Cumulative.StopMeasurement();
         }
     }
-    
+
     public void Draw(GraphicsDevice graphicsDevice)
     {
         graphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
-        
+
         _rendererResources.BlockFaceEffect.World = Matrix.CreateTranslation(_chunk.WorldPosition);
 
         _mesh!.Render(graphicsDevice, _rendererResources);
     }
-    
+
     public void Dispose()
     {
         _meshGenerator.Dispose();

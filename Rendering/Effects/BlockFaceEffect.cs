@@ -6,18 +6,20 @@ namespace MyGame.Rendering.Effects;
 
 public class BlockFaceEffect : Effect, IEffectMatrices
 {
-    private Matrix _projection;
-    private Matrix _view;
-    private Matrix _world;
-    private Vector2 _textureSize;
-    private Color _lineColor;
-    private DirtyFlags _dirtyFlags;
+    private readonly EffectParameter _lineColorParam;
 
 
     private readonly EffectParameter _textureParam;
-    private readonly EffectParameter _worldViewProjectionParam;
     private readonly EffectParameter _textureSizeParam;
-    private readonly EffectParameter _lineColorParam;
+    private readonly EffectParameter _worldViewProjectionParam;
+    private DirtyFlags _dirtyFlags;
+
+    private bool _drawLines;
+    private Color _lineColor;
+    private Matrix _projection;
+    private Vector2 _textureSize;
+    private Matrix _view;
+    private Matrix _world;
 
     public BlockFaceEffect(Effect cloneSource) : base(cloneSource)
     {
@@ -41,6 +43,36 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     {
         get => _textureParam.GetValueTexture2D();
         set => _textureParam.SetValue(value);
+    }
+
+    public Vector2 TextureSize
+    {
+        get => _textureSize;
+        set
+        {
+            _textureSize = value;
+            _dirtyFlags |= DirtyFlags.TextureSize;
+        }
+    }
+
+    public Color LineColor
+    {
+        get => _lineColor;
+        set
+        {
+            _lineColor = value;
+            _dirtyFlags |= DirtyFlags.LineColor;
+        }
+    }
+
+    public bool DrawLines
+    {
+        get => _drawLines;
+        set
+        {
+            _drawLines = value;
+            _dirtyFlags |= DirtyFlags.Technique;
+        }
     }
 
     public Matrix Projection
@@ -70,38 +102,6 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         {
             _world = value;
             _dirtyFlags |= DirtyFlags.WorldViewProjection;
-        }
-    }
-    
-    public Vector2 TextureSize
-    {
-        get => _textureSize;
-        set
-        {
-            _textureSize = value; 
-            _dirtyFlags |= DirtyFlags.TextureSize;
-        }
-    }
-
-    public Color LineColor
-    {
-        get => _lineColor;
-        set
-        {
-            _lineColor = value; 
-            _dirtyFlags |= DirtyFlags.LineColor;
-        }
-    }
-
-    private bool _drawLines;
-
-    public bool DrawLines
-    {
-        get => _drawLines;
-        set
-        {
-            _drawLines = value;
-            _dirtyFlags |= DirtyFlags.Technique;
         }
     }
 

@@ -10,8 +10,8 @@ namespace MyGame.Platform;
 public class WindowsRawMouseInput : IRawMouseInput
 {
     private readonly Game _game;
-    private WindowsInputWindow? _nativeWindow;
     private bool _isPaused;
+    private WindowsInputWindow? _nativeWindow;
 
     public WindowsRawMouseInput(Game game)
     {
@@ -41,23 +41,8 @@ public class WindowsRawMouseInput : IRawMouseInput
     {
         _nativeWindow?.DestroyHandle();
         _nativeWindow = null;
-        
+
         GlobalGameContext.Current.Game.IsMouseVisible = true;
-    }
-
-    private static void CenterMouse()
-    {
-        // keep mouse in bounds
-        var position = Mouse.GetState().Position.ToVector2();
-        var windowSize = GlobalGameContext.Current.WindowSize;
-        var left = windowSize * 0.1f;
-        var right = windowSize * 0.9f;
-
-        if (position.X < left.X || position.Y < left.Y || position.X > right.X || position.Y > right.Y)
-        {
-            var center = GlobalGameContext.Current.WindowSize / 2;
-            Mouse.SetPosition((int)center.X, (int)center.Y);
-        }
     }
 
     public Vector2 GetInput()
@@ -88,6 +73,21 @@ public class WindowsRawMouseInput : IRawMouseInput
 
         // reset delta accumulated during pause
         _nativeWindow?.GetRawDelta(out _, out _);
+    }
+
+    private static void CenterMouse()
+    {
+        // keep mouse in bounds
+        var position = Mouse.GetState().Position.ToVector2();
+        var windowSize = GlobalGameContext.Current.WindowSize;
+        var left = windowSize * 0.1f;
+        var right = windowSize * 0.9f;
+
+        if (position.X < left.X || position.Y < left.Y || position.X > right.X || position.Y > right.Y)
+        {
+            var center = GlobalGameContext.Current.WindowSize / 2;
+            Mouse.SetPosition((int)center.X, (int)center.Y);
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -131,7 +131,7 @@ public class WindowsRawMouseInput : IRawMouseInput
         }
 
         public bool IsCapturing { get; private set; }
-        
+
         public void GetRawDelta(out int x, out int y)
         {
             x = _rawXValue;

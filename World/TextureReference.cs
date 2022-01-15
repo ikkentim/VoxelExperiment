@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace MyGame.World;
+﻿namespace MyGame.World;
 
 public struct TextureReference
 {

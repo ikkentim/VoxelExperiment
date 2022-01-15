@@ -16,7 +16,7 @@ public class KeyboardInput
         if (kb.IsKeyDown(Keys.D)) kbVec += Vector3.Right;
         if (kb.IsKeyDown(Keys.Q)) kbVec += Vector3.Down;
         if (kb.IsKeyDown(Keys.E)) kbVec += Vector3.Up;
-        
+
         if (kb.IsKeyDown(Keys.LeftShift)) kbVec *= 2;
         if (kb.IsKeyDown(Keys.LeftControl)) kbVec /= 4;
         return kbVec;

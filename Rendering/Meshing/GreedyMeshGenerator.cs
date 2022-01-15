@@ -11,12 +11,10 @@ namespace MyGame.Rendering.Meshing;
 
 public class GreedyMeshGenerator : IDisposable
 {
-    private readonly Chunk _chunk;
-    private readonly TextureRegistry _textureRegistry;
-    private readonly bool _includeMeshLines;
     private readonly Dictionary<Texture2D, AtlasBuffer> _bufferPerAtlas = new();
-
-    private record AtlasBuffer(BufferGenerator<VertexPositionBlockFace> Buffer, BufferGenerator<VertexPosition>? LinesBuffer, Vector2 TextureSize);
+    private readonly Chunk _chunk;
+    private readonly bool _includeMeshLines;
+    private readonly TextureRegistry _textureRegistry;
 
     public GreedyMeshGenerator(Chunk chunk, TextureRegistry textureRegistry, bool includeMeshLines)
     {
@@ -27,6 +25,17 @@ public class GreedyMeshGenerator : IDisposable
         Debug.Assert(Chunk.Size == 16); // required for using BoolArray16X16
     }
 
+    public void Dispose()
+    {
+        foreach (var value in _bufferPerAtlas.Values)
+        {
+            value.Buffer.Dispose();
+            value.LinesBuffer?.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
     public ChunkMesh Create(GraphicsDevice graphicsDevice)
     {
         foreach (var kv in _bufferPerAtlas)
@@ -34,7 +43,7 @@ public class GreedyMeshGenerator : IDisposable
             kv.Value.Buffer.Clear();
             kv.Value.LinesBuffer?.Clear();
         }
-            
+
         for (var depth = 0; depth < Chunk.Size; depth++)
             foreach (var face in BlockFaces.AllFaces)
             {
@@ -76,7 +85,7 @@ public class GreedyMeshGenerator : IDisposable
     private void GreedyMesh(BlockFace blockFace, int depth)
     {
         var visited = new BoolArray16X16();
-            
+
         for (var j = 0; j < Chunk.Size; j++)
         for (var i = 0; i < Chunk.Size; i++)
         {
@@ -98,7 +107,7 @@ public class GreedyMeshGenerator : IDisposable
             visited[i, j] = true;
             return;
         }
-            
+
         // The texture we'll be merging in the current routine
         var sourceTexture = source.Kind!.GetTexture(blockFace).Name;
 
@@ -107,7 +116,7 @@ public class GreedyMeshGenerator : IDisposable
         for (var i2 = i + 1; i2 < Chunk.Size; i2++)
         {
             if (visited[i2, j])
-            { 
+            {
                 // face was already visited somehow (shouldn't happen?)
                 break;
             }
@@ -126,7 +135,7 @@ public class GreedyMeshGenerator : IDisposable
                 // face has a different texture
                 break;
             }
-                
+
             visited[i2, j] = true;
             maxI++;
         }
@@ -146,9 +155,9 @@ public class GreedyMeshGenerator : IDisposable
                     accept = false;
                     break;
                 }
-                    
+
                 var block = _chunk.GetBlock(GetPosition(blockFace, depth, i2, j2));
-                    
+
                 if ((block.VisibleBlockFaces & blockFace) == BlockFace.None)
                 {
                     // face is not visible
@@ -178,7 +187,7 @@ public class GreedyMeshGenerator : IDisposable
 
             maxJ++;
         }
-        
+
         var textureReference = _textureRegistry.GetTexture(sourceTexture);
 
         if (!_bufferPerAtlas.TryGetValue(textureReference.Texture, out var buffer))
@@ -187,18 +196,18 @@ public class GreedyMeshGenerator : IDisposable
                 buffer = new AtlasBuffer(new BufferGenerator<VertexPositionBlockFace>(),
                     _includeMeshLines ? new BufferGenerator<VertexPosition>() : null,
                     textureReference.UvSize);
-
         }
-        
+
         AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
     }
 
-    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer, TextureAtlasReference textureReference)
+    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer,
+        TextureAtlasReference textureReference)
     {
         var lenI = maxI - i + 1;
         var lenJ = maxJ - j + 1;
         var size = new Vector2(lenI, lenJ);
-            
+
         var faceSize = GetPosition(blockFace, 0, lenI, lenJ);
         var normal = BlockFaces.GetNormal(blockFace);
         var up = BlockFaces.GetUp(blockFace);
@@ -211,22 +220,22 @@ public class GreedyMeshGenerator : IDisposable
 
                            // Get top-right
                            + (cross + up) * (faceSize / 2);
-            
+
         if (BlockFaces.IsPositive(blockFace))
         {
             faceTopRight += normal;
         }
-        
+
         VertexPositionBlockFace ToVertex(Vector2 uv)
         {
             var position = faceTopRight + (cross * -(1 - uv.X) + up * -uv.Y) * faceSize;
 
             uv.X = 1 - uv.X; // invert x for now...
             uv *= size;
-            
+
             return new VertexPositionBlockFace(position, uv, textureReference.Uv);
         }
-            
+
         if (buffer.LinesBuffer != null)
         {
             VertexPosition ToLinesVertex(Vector2 uv)
@@ -250,15 +259,15 @@ public class GreedyMeshGenerator : IDisposable
             ToVertex(new Vector2(1, 1))
         );
     }
- 
+
     private static IntVector3 GetPosition(BlockFace blockFace, int depth, int i, int j)
     {
         var normal = BlockFaces.GetNormal(blockFace);
         var pos = normal * depth;
-            
+
         if (BlockFaces.IsNegative(blockFace))
             pos = -pos;
-            
+
         if (normal.X != 0)
         {
             pos.Y = j;
@@ -278,14 +287,6 @@ public class GreedyMeshGenerator : IDisposable
         return pos;
     }
 
-    public void Dispose()
-    {
-        foreach (var value in _bufferPerAtlas.Values)
-        {
-            value.Buffer.Dispose();
-            value.LinesBuffer?.Dispose();
-        }
-
-        GC.SuppressFinalize(this);
-    }
+    private record AtlasBuffer(BufferGenerator<VertexPositionBlockFace> Buffer, BufferGenerator<VertexPosition>? LinesBuffer,
+        Vector2 TextureSize);
 }

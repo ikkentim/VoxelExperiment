@@ -7,7 +7,7 @@ namespace MyGame.World.Blocks;
 public class AirBlock : Block
 {
     public static AirBlock Instance { get; } = new();
-    
+
     public override string Name => "air";
 
     public override TextureReference GetTexture(BlockFace face) => new();

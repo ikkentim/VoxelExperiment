@@ -11,7 +11,7 @@ public class SolidBlock : Block
         Name = name;
         _texture = texture;
     }
-    
+
     public override string Name { get; }
 
     public override TextureReference GetTexture(BlockFace face)

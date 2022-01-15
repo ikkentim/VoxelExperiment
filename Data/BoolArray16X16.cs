@@ -8,7 +8,7 @@ public struct BoolArray16X16
     private ulong _b;
     private ulong _c;
     private ulong _d;
-    
+
     public bool this[int index]
     {
         get => Get(index);
@@ -38,28 +38,26 @@ public struct BoolArray16X16
 
     public void Set(int index, bool value)
     {
-        
         if (index < 0 || index >= 256)
             throw new ArgumentOutOfRangeException(nameof(index));
-        
+
         var rem = index % 64;
-        var mask = ((ulong)1 << rem);
+        var mask = (ulong)1 << rem;
 
         switch (index / 64)
         {
-            case 0: 
+            case 0:
                 _a = (_a & ~mask) | (value ? mask : 0);
                 break;
             case 1:
                 _b = (_b & ~mask) | (value ? mask : 0);
                 break;
-            case 2: 
+            case 2:
                 _c = (_c & ~mask) | (value ? mask : 0);
                 break;
-            default: 
+            default:
                 _d = (_d & ~mask) | (value ? mask : 0);
                 break;
         }
     }
-    
 }

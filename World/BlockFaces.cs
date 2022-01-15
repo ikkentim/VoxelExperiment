@@ -15,7 +15,7 @@ public static class BlockFaces
         IntVector3.UnitZ,
         -IntVector3.UnitX,
         -IntVector3.UnitY,
-        -IntVector3.UnitZ,
+        -IntVector3.UnitZ
     };
 
     public static BlockFace[] AllFaces { get; } =
@@ -27,7 +27,7 @@ public static class BlockFaces
         BlockFace.Bottom,
         BlockFace.North
     };
-    
+
     public static BlockFace GetOpposite(BlockFace blockFace)
     {
         if ((blockFace & PositiveFaces) != BlockFace.None)
@@ -35,7 +35,7 @@ public static class BlockFaces
 
         return (BlockFace)((int)blockFace >> 1);
     }
-    
+
     public static bool IsPositive(BlockFace blockFace) => BlockFace.None != (PositiveFaces & blockFace);
     public static bool IsNegative(BlockFace blockFace) => BlockFace.None != (NegativeFaces & blockFace);
 
@@ -78,10 +78,12 @@ public static class BlockFaces
         {
             return normal.Z < 0 ? BlockFace.North : BlockFace.South;
         }
+
         if (normal.X == 0 && normal.Z == 0)
         {
             return normal.Y < 0 ? BlockFace.Bottom : BlockFace.Top;
         }
+
         if (normal.Y == 0 && normal.Z == 0)
         {
             return normal.X < 0 ? BlockFace.West : BlockFace.East;
