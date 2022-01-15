@@ -23,7 +23,7 @@ public class GlobalGameContext
         MathHelper.PiOver4, // 90 fov
         Window.ClientBounds.Width / (float)Window.ClientBounds.Height,
         0.1f,
-        100);
+        500f);
 
     public static void Initialize(VoxelGame game)
     {

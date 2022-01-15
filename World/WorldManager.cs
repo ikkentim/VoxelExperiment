@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using MyGame.Data;
 using MyGame.Rendering;
 using MyGame.World.Blocks;
@@ -16,7 +14,7 @@ public class WorldManager
         Kind = AirBlock.Instance
     };
 
-    private WorldProvider _worldProvider = new();
+    private readonly WorldProvider _worldProvider = new();
     private readonly List<Chunk> _loadedChunks = new();
     private readonly Dictionary<IntVector3, Chunk> _chunkByPosition = new();
 
@@ -98,11 +96,11 @@ public class WorldManager
         if (_loadedChunkPosition == null)
         {
             // initial load
-            for (var x = -5; x <= 5; x++)
+            for (var x = -3; x <= 3; x++)
             {
-                for (var z = -5; z <= 5; z++)
+                for (var z = -3; z <= 3; z++)
                 {
-                    for (var y = 0; y < 16; y++)
+                    for (var y = 0; y < 4; y++)
                     {
                         var chunk = _worldProvider.GetChunk(_voxelGame.BlockRegistry, this, new IntVector3(x, y, z));
                         LoadChunk(chunk);
@@ -118,54 +116,5 @@ public class WorldManager
 
             // TODO load new
         }
-    }
-}
-
-public class WorldProvider
-{
-    private IWorldGenerator _generator = new FlatWorldGenerator();
-
-    public Chunk GetChunk(BlockRegistry blockRegistry, WorldManager world, IntVector3 chunkPosition)
-    {
-        return _generator.Generate(blockRegistry, world, chunkPosition);
-    }
-}
-
-public interface IWorldGenerator
-{
-    Chunk Generate(BlockRegistry blockRegistry, WorldManager world, IntVector3 chunkPosition);
-}
-
-public class FlatWorldGenerator : IWorldGenerator
-{
-    public Chunk Generate(BlockRegistry blockRegistry, WorldManager world, IntVector3 chunkPosition)
-    {
-        var chunk = new Chunk(world, chunkPosition);
-
-        if (chunkPosition.Y == 0)
-        {
-            void Set(int x, int y, int z, string block) => chunk.SetBlock(new IntVector3(x, y, z), new BlockData
-            {
-                Kind = blockRegistry.GetBlock(block)
-            });
-            
-            const int height = 4;
-            for (var x = 0; x < Chunk.Size; x++)
-            for (var y = 0; y < height; y++)
-            for (var z = 0; z < Chunk.Size; z++)
-                Set(x, y, z, y == height - 1 ? "grass" : "dirt");
-
-            if (chunkPosition == IntVector3.Zero)
-            {
-                Set(7, 3, 7, "cobblestone");
-                Set(7, 7, 7, "cobblestone");
-
-                Set(7, 7, 8, "dirt");
-                Set(7, 7, 9, "dirt");
-                Set(7, 7, 10, "dirt");
-            }
-        }
-
-        return chunk;
     }
 }

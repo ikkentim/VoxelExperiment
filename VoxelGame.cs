@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using MyGame.Components;
 using MyGame.Data;
 using MyGame.Debugging;
-using MyGame.Platform;
 using MyGame.Rendering;
 using MyGame.World;
 using MyGame.World.Blocks;
@@ -84,46 +82,7 @@ public class VoxelGame : Game
         yield return new TestDrawingComponent(this);
         yield return new DebuggingDrawingComponent(this);
     }
-
-    private IEnumerable<Chunk> GetTestChunks()
-    {
-        for (var x = -2; x < 4; x++)
-        {
-            for (var z = -2; z < 4; z++)
-            {
-                yield return CreateTestChunk(new IntVector3(x, 0, z), 3, x == 0 && z == 0);
-            }
-        }
-    }
-
-    private Chunk CreateTestChunk(IntVector3 chunkPosition, int height, bool floaties)
-    {
-        var chunk = new Chunk(WorldManager, chunkPosition);
-
-        void Set(int x, int y, int z, string block) => chunk.SetBlock(new IntVector3(x, y, z), new BlockData
-        {
-            Kind = BlockRegistry.GetBlock(block)
-        });
-
-
-        for (var x = 0; x < Chunk.Size; x++)
-        for (var y = 0; y < height; y++)
-        for (var z = 0; z < Chunk.Size; z++)
-            Set(x, y, z, y == height - 1 ? "grass" : "dirt");
-
-        if (floaties)
-        {
-            Set(7, 3, 7, "cobblestone");
-            Set(7, 7, 7, "cobblestone");
-
-            Set(7, 7, 8, "dirt");
-            Set(7, 7, 9, "dirt");
-            Set(7, 7, 10, "dirt");
-        }
-
-        return chunk;
-    }
-
+    
     private void InitializeDisplay()
     {
         TargetElapsedTime = TimeSpan.FromMilliseconds(1);
@@ -139,11 +98,8 @@ public class VoxelGame : Game
     {
         TextureRegistry.CreateTextureAtlasesAndLockRegistry(GraphicsDevice);
 
-        // Load chunks after render is initialized so chunkrenderers are created.
-        foreach (var chunk in GetTestChunks())
-        {
-            WorldManager.LoadChunk(chunk);
-        }
+        // TODO: should happen every few ticks
+        WorldManager.UpdateLoadedChunks(IntVector3.Zero);
 
         base.LoadContent();
     }
