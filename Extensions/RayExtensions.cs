@@ -14,7 +14,7 @@ public static class RayExtensions
         var (origin, direction) = ray;
         direction.Normalize();
         
-        var voxel = IntVector3.FromVector(origin);
+        var voxel = VectorHelper.Floor(origin);
 
         var step = new IntVector3(
             direction.X < 0 ? -1 : direction.X > 0 ? 1 : 0,

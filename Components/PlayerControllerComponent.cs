@@ -50,7 +50,7 @@ public class PlayerControllerComponent : DrawableGameComponent
 
     private void HandleLookingAtBlock()
     {
-        _lookingAtBlock = Game.Camera.Transform.Ray.Cast(100f, Game.WorldManager);
+        _lookingAtBlock = Game.Camera.Transform.Ray.Cast(20f, Game.WorldManager);
     }
     
     private void HandleExitAndMouseCapture()
