@@ -9,7 +9,7 @@ public class Chunk : IDisposable
 {
     public const int Size = 16;
 
-    private readonly PalettedArray<BlockState> _blockStates = new(Size * Size * Size);
+    private readonly PaletteBackedArray<BlockState> _blockStates = new(Size * Size * Size);
 
     public WorldManager World { get; }
     public IntVector3 ChunkPosition { get; }

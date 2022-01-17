@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace MyGame.World;
+namespace MyGame.Data;
 
 public class Palette<T> where T : struct, IEquatable<T>
 {
@@ -10,7 +11,7 @@ public class Palette<T> where T : struct, IEquatable<T>
     private int _usedSlots;
     private byte? _bitCache;
 
-    public byte RequiredBits => _bitCache ??= CalcBits();
+    public byte BitsRequiredForPaletteIndices => _bitCache ??= CalcBits();
 
     public Palette(byte minBits)
     {
@@ -127,7 +128,8 @@ public class Palette<T> where T : struct, IEquatable<T>
 
         return Math.Max(_minBits, bits);
     }
-
+    
+    [DebuggerDisplay("State = {State}, Count = {Count}")]
     private struct Container
     {
         public T State;

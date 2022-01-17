@@ -3,14 +3,12 @@ using System.Diagnostics;
 
 namespace MyGame.World;
 
-[DebuggerDisplay("{DebugDisplayString,nq}")]
+[DebuggerDisplay("BlockState({BlockType}:{BlockData})")]
 public struct BlockState : IEquatable<BlockState>
 {
     public Block? BlockType;
     public byte BlockData;
     
-    internal string DebugDisplayString => $"({BlockType?.GetType().Name ?? "empty"}:{BlockData})";
-
     public bool Equals(BlockState other)
     {
         return BlockType == other.BlockType && BlockData == other.BlockData;

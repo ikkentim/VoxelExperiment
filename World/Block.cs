@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using MyGame.Data;
 using MyGame.World.Blocks;
 
 namespace MyGame.World;
 
+[DebuggerDisplay("Block(Name = {Name})")]
 public abstract class Block
 {
     public const string DefaultTexture = "notex";

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Buffers;
-using System.Windows.Forms;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace MyGame.World;
+namespace MyGame.Data;
 
-public class BinaryArray : IDisposable
+public class BinaryArray : IEnumerable<int>, IDisposable
 {
     private static readonly ArrayPool<ulong> ArrayPool = ArrayPool<ulong>.Create();
 
+    private int _dataLength;
     private int _mask;
     private ulong[] _data;
     private bool _disposed;
@@ -29,8 +31,8 @@ public class BinaryArray : IDisposable
         _mask = GetMask(bitsPerValue);
         Length = length;
         
-        var backingLength = GetBackingLength(bitsPerValue);
-        _data = ArrayPool.Rent(backingLength);
+        _dataLength = GetBackingLength(bitsPerValue);
+        _data = ArrayPool.Rent(_dataLength);
         Array.Clear(_data);
     }
 
@@ -39,6 +41,11 @@ public class BinaryArray : IDisposable
         get => _bitsPerValue;
         set
         {
+            if (value == _bitsPerValue)
+            {
+                return;
+            }
+
             if (value is < 1 or > 32)
             {
                 throw new ArgumentOutOfRangeException(nameof(value));
@@ -118,6 +125,7 @@ public class BinaryArray : IDisposable
         _bitsPerValue = bitsPerValue;
         _mask = newMask;
         _data = newArray;
+        _dataLength = newBackingLength;
     }
 
     private static void SetInner(ulong[] array, byte bitsPerValue, ulong mask, int index, int value)
@@ -157,5 +165,18 @@ public class BinaryArray : IDisposable
         _data = null!;
         _disposed = true;
         GC.SuppressFinalize(this);
+    }
+
+    public IEnumerator<int> GetEnumerator()
+    {
+        for (var i = 0; i < Length; i++)
+        {
+            yield return Get(i);
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
