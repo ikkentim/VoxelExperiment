@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MyGame.Control;
 using MyGame.Extensions;
 using MyGame.World;
+using MyGame.World.Blocks;
 
 namespace MyGame.Components;
 
@@ -11,6 +14,7 @@ public class PlayerControllerComponent : DrawableGameComponent
     private readonly PlayerController _playerController;
     private bool _escape;
     private RayHitInfo _lookingAtBlock;
+    private int _selectedBlock;
 
     public PlayerControllerComponent(VoxelGame game) : base(game)
     {
@@ -24,6 +28,8 @@ public class PlayerControllerComponent : DrawableGameComponent
         _playerController.StartCaptureMouse();
     }
 
+    private int _scrollWheel;
+
     public override void Update(GameTime gameTime)
     {
         _playerController.Update(gameTime.GetDeltaTime());
@@ -31,13 +37,28 @@ public class PlayerControllerComponent : DrawableGameComponent
         HandleExitAndMouseCapture();
         HandleLookingAtBlock();
 
+        var newScroll = Mouse.GetState().ScrollWheelValue;
+        
+        if (newScroll > _scrollWheel)
+        {
+            _selectedBlock++;
+        }
+        else if (newScroll < _scrollWheel)
+        {
+            _selectedBlock--;
+        }
+        _scrollWheel = newScroll;
         if (_lookingAtBlock.IsHit)
         {
             if (_playerController.PlaceBlock)
             {
-                Game.WorldManager.SetBlock(_lookingAtBlock.Position + BlockFaces.GetNormal(_lookingAtBlock.Face), new BlockData
+                // bad temporary code
+                var list = Game.BlockRegistry.GetBlockTypes().Where(x => x is not AirBlock).ToList();
+                var blockIndex = Math.Abs(_selectedBlock) % list.Count;
+
+                Game.WorldManager.SetBlock(_lookingAtBlock.Position + BlockFaces.GetNormal(_lookingAtBlock.Face), new BlockState
                 {
-                    Kind = Game.BlockRegistry.GetBlock("stone")
+                    BlockType = list[blockIndex]
                 });
             }
             else if (_playerController.RemoveBlock)

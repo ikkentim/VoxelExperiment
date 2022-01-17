@@ -8,7 +8,7 @@ public struct RayHitInfo
 {
     public static readonly RayHitInfo Empty = new();
 
-    public RayHitInfo(bool isHit, float distance, BlockData block, IntVector3 position, Vector3 hitPosition, BlockFace face)
+    public RayHitInfo(bool isHit, float distance, BlockState block, IntVector3 position, Vector3 hitPosition, BlockFace face)
     {
         IsHit = isHit;
         Distance = distance;
@@ -20,7 +20,7 @@ public struct RayHitInfo
 
     public bool IsHit { get; }
     public float Distance { get; }
-    public BlockData Block { get; }
+    public BlockState Block { get; }
     public IntVector3 Position { get; }
     public Vector3 HitPosition { get; }
     public BlockFace Face { get; }

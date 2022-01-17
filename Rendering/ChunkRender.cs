@@ -10,7 +10,7 @@ namespace MyGame.Rendering;
 
 public class ChunkRender : IChunkRenderer
 {
-    private const bool RenderMeshLines = false; // generate line meshes instead of texture meshes
+    private const bool RenderMeshLines = true; // generate line meshes instead of texture meshes
     private readonly Chunk _chunk;
 
     private readonly GreedyMeshGenerator _meshGenerator;
@@ -34,7 +34,7 @@ public class ChunkRender : IChunkRenderer
         PerformanceCounters.Cumulative.StopMeasurement();
     }
 
-    public void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock)
+    public void BlockUpdated(IntVector3 localPosition, BlockState oldBlock, BlockState newBlock)
     {
         if (_graphics != null)
         {

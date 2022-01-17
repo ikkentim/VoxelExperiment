@@ -10,9 +10,9 @@ public class FlatWorldGenerator : IWorldGenerator
 
         if (chunkPosition.Y == 0)
         {
-            void Set(int x, int y, int z, string block) => chunk.SetBlock(new IntVector3(x, y, z), new BlockData
+            void Set(int x, int y, int z, string block) => chunk.SetBlock(new IntVector3(x, y, z), new BlockState
             {
-                Kind = blockRegistry.GetBlock(block)
+                BlockType = blockRegistry.GetBlock(block)
             });
 
             const int height = 4;
@@ -20,16 +20,6 @@ public class FlatWorldGenerator : IWorldGenerator
             for (var y = 0; y < height; y++)
             for (var z = 0; z < Chunk.Size; z++)
                 Set(x, y, z, y == height - 1 ? "grass" : "dirt");
-
-            if (chunkPosition == IntVector3.Zero)
-            {
-                Set(7, 3, 7, "cobblestone");
-                Set(7, 7, 7, "cobblestone");
-
-                Set(7, 7, 8, "dirt");
-                Set(7, 7, 9, "dirt");
-                Set(7, 7, 10, "dirt");
-            }
         }
 
         return chunk;

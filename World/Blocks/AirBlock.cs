@@ -10,16 +10,9 @@ public class AirBlock : Block
 
     public override string Name => "air";
 
+    public override bool IsOpaque => false;
+
     public override TextureReference GetTexture(BlockFace face) => new();
 
     public override IEnumerable<TextureReference> GetTextures() => Array.Empty<TextureReference>();
-
-    public override void OnCreated(ref BlockData block, IntVector3 position, WorldManager world)
-    {
-    }
-
-    public override bool OnNeighborUpdated(ref BlockData block, BlockFace direction, BlockData neighbor, WorldManager world)
-    {
-        return false;
-    }
 }

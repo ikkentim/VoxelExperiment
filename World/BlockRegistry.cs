@@ -8,6 +8,8 @@ public class BlockRegistry
     private readonly Dictionary<string, Block> _blockTypes = new();
     private bool _isLocked;
 
+    public bool IsLocked => _isLocked;
+
     public void Register(Block block)
     {
         if (_isLocked)

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MyGame.Data;
 using MyGame.Rendering.Vertices;
 using MyGame.World;
+using MyGame.World.Blocks;
 
 namespace MyGame.Rendering.Meshing;
 
@@ -82,9 +83,12 @@ public class GreedyMeshGenerator : IDisposable
         return new ChunkMesh(parts);
     }
 
+    private bool IsFaceVisible(IntVector3 localPos, IntVector3 normal) => !_chunk.GetRelativeBlock(localPos + normal).BlockType!.IsOpaque;
+
     private void GreedyMesh(BlockFace blockFace, int depth)
     {
         var visited = new BoolArray16X16();
+        var normal = BlockFaces.GetNormal(blockFace);
 
         for (var j = 0; j < Chunk.Size; j++)
         for (var i = 0; i < Chunk.Size; i++)
@@ -92,16 +96,16 @@ public class GreedyMeshGenerator : IDisposable
             if (visited[i, j])
                 continue;
 
-            GreedyMeshFromPoint(blockFace, depth, i, j, ref visited);
+            GreedyMeshFromPoint(blockFace, normal, depth, i, j, ref visited);
         }
     }
-
-    private void GreedyMeshFromPoint(BlockFace blockFace, int depth, int i, int j, ref BoolArray16X16 visited)
+    
+    private void GreedyMeshFromPoint(BlockFace blockFace, IntVector3 normal, int depth, int i, int j, ref BoolArray16X16 visited)
     {
         var localBlockPosition = GetPosition(blockFace, depth, i, j);
         var source = _chunk.GetBlock(localBlockPosition);
-
-        if ((source.VisibleBlockFaces & blockFace) == BlockFace.None)
+        
+        if (source.BlockType is AirBlock || !IsFaceVisible(localBlockPosition, normal))
         {
             // Face not visible - skip
             visited[i, j] = true;
@@ -109,7 +113,7 @@ public class GreedyMeshGenerator : IDisposable
         }
 
         // The texture we'll be merging in the current routine
-        var sourceTexture = source.Kind!.GetTexture(blockFace).Name;
+        var sourceTexture = source.BlockType!.GetTexture(blockFace).Name;
 
         // Expand covered area towards i+
         var maxI = i;
@@ -121,16 +125,18 @@ public class GreedyMeshGenerator : IDisposable
                 break;
             }
 
-            var block = _chunk.GetBlock(GetPosition(blockFace, depth, i2, j));
+            var blockPos = GetPosition(blockFace, depth, i2, j);
+            var block = _chunk.GetBlock(blockPos);
 
-            if ((block.VisibleBlockFaces & blockFace) == BlockFace.None)
+            
+            if (!IsFaceVisible(blockPos, normal))
             {
                 // face is not visible
                 visited[i2, j] = true;
                 break;
             }
 
-            if (block.Kind!.GetTexture(blockFace).Name != sourceTexture)
+            if (block.BlockType!.GetTexture(blockFace).Name != sourceTexture)
             {
                 // face has a different texture
                 break;
@@ -156,9 +162,11 @@ public class GreedyMeshGenerator : IDisposable
                     break;
                 }
 
-                var block = _chunk.GetBlock(GetPosition(blockFace, depth, i2, j2));
+                var blockPos = GetPosition(blockFace, depth, i2, j2);
+                var block = _chunk.GetBlock(blockPos);
 
-                if ((block.VisibleBlockFaces & blockFace) == BlockFace.None)
+                
+                if (!IsFaceVisible(blockPos, normal))
                 {
                     // face is not visible
                     visited[i2, j2] = true;
@@ -166,7 +174,7 @@ public class GreedyMeshGenerator : IDisposable
                     break;
                 }
 
-                if (block.Kind!.GetTexture(blockFace).Name != sourceTexture)
+                if (block.BlockType!.GetTexture(blockFace).Name != sourceTexture)
                 {
                     // face has a different texture
                     accept = false;
@@ -198,10 +206,10 @@ public class GreedyMeshGenerator : IDisposable
                     textureReference.UvSize);
         }
 
-        AddFaces(blockFace, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
+        AddFaces(blockFace, normal, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
     }
 
-    private void AddFaces(BlockFace blockFace, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer,
+    private void AddFaces(BlockFace blockFace, IntVector3 normal, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer,
         TextureAtlasReference textureReference)
     {
         var lenI = maxI - i + 1;
@@ -209,7 +217,6 @@ public class GreedyMeshGenerator : IDisposable
         var size = new Vector2(lenI, lenJ);
 
         var faceSize = GetPosition(blockFace, 0, lenI, lenJ);
-        var normal = BlockFaces.GetNormal(blockFace);
         var up = BlockFaces.GetUp(blockFace);
         var cross = Vector3.Cross(normal, up);
         var absCross = VectorHelper.Abs(cross);

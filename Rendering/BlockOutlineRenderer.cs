@@ -47,7 +47,7 @@ public class BlockOutlineRenderer
         _effect.LineColor = Color.Black;
     }
 
-    public void Render(IntVector3 position, BlockData block)
+    public void Render(IntVector3 position, BlockState block)
     {
         _effect!.World = Matrix.CreateTranslation(position);
         _effect.View = _game.Camera.ViewMatrix;

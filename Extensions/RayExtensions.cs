@@ -71,7 +71,7 @@ public static class RayExtensions
             }
 
             var block = world.GetBlock(voxel);
-            if (block.Kind is not AirBlock)
+            if (block.BlockType is not AirBlock)
             {
                 var hitPosition = origin + direction * distance;
                 return new RayHitInfo(true, distance, block, voxel, hitPosition, face);

@@ -8,6 +8,6 @@ namespace MyGame.Rendering;
 public interface IChunkRenderer : IDisposable
 {
     void Initialize(GraphicsDevice graphicsDevice);
-    void BlockUpdated(IntVector3 localPosition, BlockData oldBlock, BlockData newBlock);
+    void BlockUpdated(IntVector3 localPosition, BlockState oldBlock, BlockState newBlock);
     void Draw(GraphicsDevice graphicsDevice);
 }

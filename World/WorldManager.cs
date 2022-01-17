@@ -7,15 +7,18 @@ namespace MyGame.World;
 
 public class WorldManager
 {
+    private const int MinWorldHeight = 0;
+    private const int MaxWorldHeight = 32;
+
     private readonly Dictionary<IntVector3, Chunk> _chunkByPosition = new();
     private readonly List<Chunk> _loadedChunks = new();
     private readonly VoxelGame _voxelGame;
 
     private readonly WorldProvider _worldProvider = new();
 
-    private BlockData _badAirBlock = new()
+    private static readonly BlockState BadAirBlock = new()
     {
-        Kind = AirBlock.Instance
+        BlockType = AirBlock.Instance
     };
 
     private IntVector3? _loadedChunkPosition = null;
@@ -27,13 +30,13 @@ public class WorldManager
 
     public WorldRenderer? Renderer { get; set; }
 
-    public Chunk? GetChunk(IntVector3 position)
+    public Chunk? GetChunk(IntVector3 chunkPosition)
     {
-        _chunkByPosition.TryGetValue(position, out var chunk);
+        _chunkByPosition.TryGetValue(chunkPosition, out var chunk);
         return chunk;
     }
 
-    public ref BlockData GetBlock(IntVector3 position)
+    public BlockState GetBlock(IntVector3 position)
     {
         var chunkPosition = Chunk.GetChunkPosition(position);
 
@@ -42,17 +45,16 @@ public class WorldManager
         if (chunk == null)
         {
             // Chunk not loaded. Returning a local air block for now.
-            // TODO: Should change this later because callers can modify the contents of the block data.
-            return ref _badAirBlock;
+            return BadAirBlock;
         }
 
         var localPosition = position - chunk.WorldPosition;
-        ref var blockData = ref chunk.GetBlock(localPosition);
+        var blockData = chunk.GetBlock(localPosition);
 
-        return ref blockData;
+        return blockData;
     }
-
-    public void SetBlock(IntVector3 position, BlockData data)
+    
+    public void SetBlock(IntVector3 position, BlockState data)
     {
         var chunkPosition = Chunk.GetChunkPosition(position);
 
@@ -116,5 +118,13 @@ public class WorldManager
 
             // TODO load new
         }
+    }
+
+    public bool IsValidPosition(IntVector3 position)
+    {
+        if (position.Y is < MinWorldHeight or > MaxWorldHeight)
+            return false;
+
+        return GetChunk(Chunk.GetChunkPosition(position)) != null;
     }
 }
