@@ -1,13 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyGame.Debugging;
 
 namespace MyGame.Rendering.Meshing;
 
-public class ChunkMesh
+public interface IChunkMesh : IDisposable
+{
+    void Render(GraphicsDevice graphicsDevice, ChunkRendererResources resources);
+}
+
+public sealed class EmptyChunkMesh : IChunkMesh
+{
+    public static IChunkMesh Instance { get; } = new EmptyChunkMesh();
+
+    public void Dispose()
+    {
+    }
+
+    public void Render(GraphicsDevice graphicsDevice, ChunkRendererResources resources)
+    {
+    }
+}
+
+public class ChunkMesh : IChunkMesh
 {
     private readonly IEnumerable<MeshPart> _parts;
+    private bool _isDisposed;
 
     public ChunkMesh(IEnumerable<MeshPart> parts)
     {
@@ -16,8 +36,13 @@ public class ChunkMesh
 
     public void Render(GraphicsDevice graphicsDevice, ChunkRendererResources resources)
     {
-        var calls = 0;
+        if (_isDisposed)
+        {
+            throw new ObjectDisposedException(nameof(ChunkMesh));
+        }
 
+        var calls = 0;
+        
         PerformanceCounters.Drawing.StartMeasurement("chunk_mesh_render");
         foreach (var part in _parts)
         {
@@ -69,5 +94,25 @@ public class ChunkMesh
         public Vector2 TextureSize;
         public int PrimitiveCount;
         public int LinePrimitiveCount;
+    }
+    
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        foreach (var part in _parts)
+        {
+            part.IndexBuffer.Dispose();
+            part.VertexBuffer.Dispose();
+            part.LineIndexBuffer?.Dispose();
+            part.LineVertexBuffer?.Dispose();
+        }
+
+        _isDisposed = true;
+
+        GC.SuppressFinalize(this);
     }
 }

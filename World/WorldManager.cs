@@ -27,9 +27,7 @@ public class WorldManager
     {
         _voxelGame = voxelGame;
     }
-
-    public WorldRenderer? Renderer { get; set; }
-
+    
     public Chunk? GetChunk(IntVector3 chunkPosition)
     {
         _chunkByPosition.TryGetValue(chunkPosition, out var chunk);
@@ -81,8 +79,6 @@ public class WorldManager
         _chunkByPosition[chunk.ChunkPosition] = chunk;
 
         chunk.OnLoaded();
-
-        Renderer?.ChunkLoaded(chunk);
     }
 
     public void UnloadChunk(Chunk chunk)
@@ -102,7 +98,7 @@ public class WorldManager
             {
                 for (var z = -3; z <= 3; z++)
                 {
-                    for (var y = 0; y < 4; y++)
+                    for (var y = 0; y < 16; y++)
                     {
                         var chunk = _worldProvider.GetChunk(_voxelGame.BlockRegistry, this, new IntVector3(x, y, z));
                         LoadChunk(chunk);

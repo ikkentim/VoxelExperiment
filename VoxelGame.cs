@@ -18,12 +18,13 @@ public class VoxelGame : Game
     {
         Content.RootDirectory = "Content";
 
-        _graphics = new GraphicsDeviceManager(this);
-
         IsMouseVisible = true;
+
+        _graphics = new GraphicsDeviceManager(this);
 
         BlockOutlineRenderer = new BlockOutlineRenderer(this);
         WorldManager = new WorldManager(this);
+        WorldRender = new WorldRenderingGameComponent(this);
     }
 
     public Camera Camera { get; } = new();
@@ -33,6 +34,7 @@ public class VoxelGame : Game
     public TextureRegistry TextureRegistry { get; } = new();
     public AssetManager AssetManager { get; } = new();
     public BlockOutlineRenderer BlockOutlineRenderer { get; }
+    public WorldRenderingGameComponent WorldRender { get; }
 
     protected override void Initialize()
     {
@@ -77,10 +79,10 @@ public class VoxelGame : Game
 
     private IEnumerable<IGameComponent> GetComponents()
     {
-        yield return new WorldRendererGameComponent(this);
         yield return new PlayerControllerComponent(this);
         yield return new TestDrawingComponent(this);
         yield return new DebuggingDrawingComponent(this);
+        yield return WorldRender;
     }
 
     private void InitializeDisplay()
@@ -97,7 +99,7 @@ public class VoxelGame : Game
     protected override void LoadContent()
     {
         TextureRegistry.CreateTextureAtlasesAndLockRegistry(GraphicsDevice);
-
+        
         // TODO: should happen every few ticks
         WorldManager.UpdateLoadedChunks(IntVector3.Zero);
 

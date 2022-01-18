@@ -177,3 +177,84 @@ public class BufferGenerator<T> : IDisposable where T : struct
         _primitiveCount = 0;
     }
 }
+
+public class BufferGeneratorV2<T> where T : struct
+{
+    private readonly List<T> _vertices = new();
+    private List<ushort> _indices = new();
+
+    private int _primitiveCount;
+
+    public int PrimitiveCount => _primitiveCount;
+    
+    public void AddFace(T a, T b, T c, T d)
+    {
+        var start = _vertices.Count;
+        _vertices.Add(a);
+        _vertices.Add(b);
+        _vertices.Add(c);
+        _vertices.Add(d);
+
+        _primitiveCount += 2;
+
+        // a - b
+        // |   |
+        // c - d
+        _indices.Add((ushort)(start + 2));
+        _indices.Add((ushort)(start + 1));
+        _indices.Add((ushort)(start + 0));
+        _indices.Add((ushort)(start + 3));
+        _indices.Add((ushort)(start + 1));
+        _indices.Add((ushort)(start + 2));
+    }
+
+    public void AddFaceLines(T a, T b, T c, T d)
+    {
+        var start = _vertices.Count;
+        _vertices.Add(a);
+        _vertices.Add(b);
+        _vertices.Add(c);
+        _vertices.Add(d);
+
+        _primitiveCount += 5;
+
+        // a - b
+        // |   |
+        // c - d
+        _indices.Add((ushort)(start + 2));
+        _indices.Add((ushort)(start + 1));
+        _indices.Add((ushort)(start + 1));
+        _indices.Add((ushort)(start + 0));
+        _indices.Add((ushort)(start + 0));
+        _indices.Add((ushort)(start + 2));
+        _indices.Add((ushort)(start + 2));
+        _indices.Add((ushort)(start + 3));
+        _indices.Add((ushort)(start + 3));
+        _indices.Add((ushort)(start + 1));
+    }
+
+    public (IndexBuffer, VertexBuffer, int) CreateBuffers(GraphicsDevice graphicsDevice)
+    {
+        var indexCount = _indices.Count;
+
+        var vertexBuffer = new VertexBuffer(graphicsDevice, typeof(T), _vertices.Count, BufferUsage.WriteOnly);
+        var indexBuffer = new IndexBuffer(graphicsDevice, IndexElementSize.SixteenBits, indexCount, BufferUsage.WriteOnly);
+        
+        // TODO: Booh, copying...
+        var vertices = _vertices.ToArray();
+        vertexBuffer.SetData(vertices);
+        
+        var indices = _indices.ToArray();
+        indexBuffer.SetData(indices);
+  
+        return (indexBuffer, vertexBuffer, _primitiveCount);
+    }
+
+    public void Clear()
+    {
+        _vertices.Clear();
+        _indices?.Clear();
+
+        _primitiveCount = 0;
+    }
+}

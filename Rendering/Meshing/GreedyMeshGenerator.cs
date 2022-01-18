@@ -10,82 +10,74 @@ using MyGame.World.Blocks;
 
 namespace MyGame.Rendering.Meshing;
 
-public class GreedyMeshGenerator : IDisposable
+public class GreedyMeshGenerator
 {
     private readonly Dictionary<Texture2D, AtlasBuffer> _bufferPerAtlas = new();
-    private readonly Chunk _chunk;
     private readonly bool _includeMeshLines;
     private readonly TextureRegistry _textureRegistry;
 
-    public GreedyMeshGenerator(Chunk chunk, TextureRegistry textureRegistry, bool includeMeshLines)
+    public GreedyMeshGenerator(TextureRegistry textureRegistry, bool includeMeshLines)
     {
-        _chunk = chunk;
         _textureRegistry = textureRegistry;
         _includeMeshLines = includeMeshLines;
 
         Debug.Assert(Chunk.Size == 16); // required for using BoolArray16X16
     }
-
-    public void Dispose()
+    
+    public IChunkMesh Create(Chunk chunk, GraphicsDevice graphicsDevice)
     {
         foreach (var value in _bufferPerAtlas.Values)
         {
-            value.Buffer.Dispose();
-            value.LinesBuffer?.Dispose();
+            value.Buffer.Clear();
+            value.LinesBuffer?.Clear();
         }
 
-        GC.SuppressFinalize(this);
-    }
-
-    public ChunkMesh Create(GraphicsDevice graphicsDevice)
-    {
-        foreach (var kv in _bufferPerAtlas)
-        {
-            kv.Value.Buffer.Clear();
-            kv.Value.LinesBuffer?.Clear();
-        }
+        if (chunk.BlockCount == 0)
+            return EmptyChunkMesh.Instance;
 
         for (var depth = 0; depth < Chunk.Size; depth++)
             foreach (var face in BlockFaces.AllFaces)
             {
-                GreedyMesh(face, depth);
+                GreedyMesh(chunk, face, depth);
             }
 
         var parts = new List<ChunkMesh.MeshPart>(_bufferPerAtlas.Count);
 
         foreach (var (texture, atlasBuffer) in _bufferPerAtlas)
         {
-            if (!atlasBuffer.Buffer.IsEmpty)
+            if (atlasBuffer.Buffer.PrimitiveCount != 0)
             {
-                var (indexBuffer, vertexBuffer) = atlasBuffer.Buffer.GetBuffers(graphicsDevice);
+                var (indexBuffer, vertexBuffer, primitiveCount) = atlasBuffer.Buffer.CreateBuffers(graphicsDevice);
 
                 var part = new ChunkMesh.MeshPart
                 {
                     Texture = texture,
                     IndexBuffer = indexBuffer,
                     VertexBuffer = vertexBuffer,
-                    PrimitiveCount = atlasBuffer.Buffer.PrimitiveCount,
+                    PrimitiveCount = primitiveCount,
                     TextureSize = atlasBuffer.TextureSize
                 };
 
-                if (atlasBuffer.LinesBuffer is { IsEmpty: false })
+                if (atlasBuffer.LinesBuffer is not null)
                 {
-                    (indexBuffer, vertexBuffer) = atlasBuffer.LinesBuffer.GetBuffers(graphicsDevice);
+                    (indexBuffer, vertexBuffer, primitiveCount) = atlasBuffer.LinesBuffer.CreateBuffers(graphicsDevice);
                     part.LineIndexBuffer = indexBuffer;
                     part.LineVertexBuffer = vertexBuffer;
-                    part.LinePrimitiveCount = atlasBuffer.LinesBuffer.PrimitiveCount;
+                    part.LinePrimitiveCount = primitiveCount;
                 }
 
                 parts.Add(part);
             }
         }
 
-        return new ChunkMesh(parts);
+        return parts.Count == 0
+            ? EmptyChunkMesh.Instance
+            : new ChunkMesh(parts);
     }
 
-    private bool IsFaceVisible(IntVector3 localPos, IntVector3 normal) => !_chunk.GetRelativeBlock(localPos + normal).BlockType!.IsOpaque;
+    private static bool IsFaceVisible(Chunk chunk, IntVector3 localPos, IntVector3 normal) => !chunk.GetRelativeBlock(localPos + normal).BlockType!.IsOpaque;
 
-    private void GreedyMesh(BlockFace blockFace, int depth)
+    private void GreedyMesh(Chunk chunk, BlockFace blockFace, int depth)
     {
         var visited = new BoolArray16X16();
         var normal = BlockFaces.GetNormal(blockFace);
@@ -96,16 +88,16 @@ public class GreedyMeshGenerator : IDisposable
             if (visited[i, j])
                 continue;
 
-            GreedyMeshFromPoint(blockFace, normal, depth, i, j, ref visited);
+            GreedyMeshFromPoint(chunk, blockFace, normal, depth, i, j, ref visited);
         }
     }
     
-    private void GreedyMeshFromPoint(BlockFace blockFace, IntVector3 normal, int depth, int i, int j, ref BoolArray16X16 visited)
+    private void GreedyMeshFromPoint(Chunk chunk, BlockFace blockFace, IntVector3 normal, int depth, int i, int j, ref BoolArray16X16 visited)
     {
         var localBlockPosition = GetPosition(blockFace, depth, i, j);
-        var source = _chunk.GetBlock(localBlockPosition);
+        var source = chunk.GetBlock(localBlockPosition);
         
-        if (source.BlockType is AirBlock || !IsFaceVisible(localBlockPosition, normal))
+        if (source.BlockType is AirBlock || !IsFaceVisible(chunk, localBlockPosition, normal))
         {
             // Face not visible - skip
             visited[i, j] = true;
@@ -126,10 +118,10 @@ public class GreedyMeshGenerator : IDisposable
             }
 
             var blockPos = GetPosition(blockFace, depth, i2, j);
-            var block = _chunk.GetBlock(blockPos);
+            var block = chunk.GetBlock(blockPos);
 
             
-            if (!IsFaceVisible(blockPos, normal))
+            if (!IsFaceVisible(chunk, blockPos, normal))
             {
                 // face is not visible
                 visited[i2, j] = true;
@@ -163,10 +155,10 @@ public class GreedyMeshGenerator : IDisposable
                 }
 
                 var blockPos = GetPosition(blockFace, depth, i2, j2);
-                var block = _chunk.GetBlock(blockPos);
+                var block = chunk.GetBlock(blockPos);
 
                 
-                if (!IsFaceVisible(blockPos, normal))
+                if (!IsFaceVisible(chunk, blockPos, normal))
                 {
                     // face is not visible
                     visited[i2, j2] = true;
@@ -201,15 +193,15 @@ public class GreedyMeshGenerator : IDisposable
         if (!_bufferPerAtlas.TryGetValue(textureReference.Texture, out var buffer))
         {
             _bufferPerAtlas[textureReference.Texture] =
-                buffer = new AtlasBuffer(new BufferGenerator<VertexPositionBlockFace>(),
-                    _includeMeshLines ? new BufferGenerator<VertexPosition>() : null,
+                buffer = new AtlasBuffer(new BufferGeneratorV2<VertexPositionBlockFace>(),
+                    _includeMeshLines ? new BufferGeneratorV2<VertexPosition>() : null,
                     textureReference.UvSize);
         }
 
         AddFaces(blockFace, normal, i, j, maxI, maxJ, localBlockPosition, buffer, textureReference);
     }
 
-    private void AddFaces(BlockFace blockFace, IntVector3 normal, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer,
+    private static void AddFaces(BlockFace blockFace, IntVector3 normal, int i, int j, int maxI, int maxJ, IntVector3 localPos, AtlasBuffer buffer,
         TextureAtlasReference textureReference)
     {
         var lenI = maxI - i + 1;
@@ -294,6 +286,6 @@ public class GreedyMeshGenerator : IDisposable
         return pos;
     }
 
-    private record AtlasBuffer(BufferGenerator<VertexPositionBlockFace> Buffer, BufferGenerator<VertexPosition>? LinesBuffer,
+    private record AtlasBuffer(BufferGeneratorV2<VertexPositionBlockFace> Buffer, BufferGeneratorV2<VertexPosition>? LinesBuffer,
         Vector2 TextureSize);
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MyGame.Data;
 
-public class PaletteBackedArray<T> : IEnumerable<T> where T : struct, IEquatable<T>
+public class PaletteBackedArray<T> : IEnumerable<T>, IDisposable where T : struct, IEquatable<T>
 {
     private readonly Palette<T> _palette = new(4);
     private readonly BinaryArray _data;
@@ -59,5 +59,10 @@ public class PaletteBackedArray<T> : IEnumerable<T> where T : struct, IEquatable
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public void Dispose()
+    {
+        _data.Dispose();
     }
 }

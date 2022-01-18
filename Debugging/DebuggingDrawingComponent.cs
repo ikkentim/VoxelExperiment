@@ -41,6 +41,12 @@ public class DebuggingDrawingComponent : DrawableGameComponent
 
     private new VoxelGame Game => (VoxelGame)base.Game;
 
+    public override void Initialize()
+    {
+        DrawOrder = 1000;
+        base.Initialize();
+    }
+
     protected override void LoadContent()
     {
         _font = Game.AssetManager.GetDebugFont();

@@ -1,6 +1,5 @@
 ﻿using System;
 using MyGame.Data;
-using MyGame.Rendering;
 using MyGame.World.Blocks;
 
 namespace MyGame.World;
@@ -14,7 +13,6 @@ public class Chunk : IDisposable
     public WorldManager World { get; }
     public IntVector3 ChunkPosition { get; }
     public IntVector3 WorldPosition => ChunkPosition * Size;
-    public IChunkRenderer? Renderer { get; set; }
     public int BlockCount { get; private set; }
 
     public Chunk(WorldManager world, IntVector3 chunkPosition)
@@ -35,8 +33,15 @@ public class Chunk : IDisposable
             // in a palette is always found at index 0
             state.BlockType = null;
         }
-        
-        var oldFilled = _blockStates.Replace(GetIndex(localPos), state).BlockType != null;
+
+        var oldState = _blockStates.Replace(GetIndex(localPos), state);
+
+        if (oldState == state)
+        {
+            return;
+        }
+
+        var oldFilled = oldState.BlockType != null;
         var newFilled = state.BlockType != null;
 
         if (newFilled && !oldFilled)
@@ -48,8 +53,7 @@ public class Chunk : IDisposable
             BlockCount--;
         }
 
-
-        Renderer?.BlockUpdated(localPos, default, default); // todo
+        GlobalGameContext.Current.Game.WorldRender.MarkChunkDirty(this); // todo; event based or something..
     }
     
     private static int GetIndex(IntVector3 localPos)
@@ -102,9 +106,7 @@ public class Chunk : IDisposable
 
     public void Dispose()
     {
-        Renderer?.Dispose();
-
-        GC.SuppressFinalize(this);
+        _blockStates.Dispose();
     }
     
     private static int GetChunkPositionComponent(int component)
@@ -123,5 +125,4 @@ public class Chunk : IDisposable
             GetChunkPositionComponent(position.X),
             GetChunkPositionComponent(position.Y),
             GetChunkPositionComponent(position.Z));
-
 }
