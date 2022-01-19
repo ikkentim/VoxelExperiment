@@ -9,24 +9,18 @@
 
 matrix WorldViewProjection;
 
-struct VertexShaderInput
-{
-	float4 Position : POSITION0;
-	float4 Color : COLOR0;
-};
-
 struct VertexShaderOutput
 {
-	float4 Position : SV_POSITION;
+	float4 Position : SV_Position;
 	float4 Color : COLOR0;
 };
 
-VertexShaderOutput MainVS(in VertexShaderInput input)
+VertexShaderOutput MainVS(float4 pos : POSITION0, float4 col : COLOR0)
 {
-	VertexShaderOutput output = (VertexShaderOutput)0;
+    VertexShaderOutput output;
 
-	output.Position = mul(input.Position, WorldViewProjection);
-	output.Color = input.Color;
+	output.Position = mul(pos, WorldViewProjection);
+	output.Color = col;
 
 	return output;
 }

@@ -232,7 +232,7 @@ public class GreedyMeshGenerator
             uv.X = 1 - uv.X; // invert x for now...
             uv *= size;
 
-            return new VertexPositionBlockFace(position, uv, textureReference.Uv);
+            return new VertexPositionBlockFace(position, normal, uv, textureReference.Uv);
         }
 
         if (buffer.LinesBuffer != null)

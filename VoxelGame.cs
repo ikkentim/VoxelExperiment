@@ -21,10 +21,18 @@ public class VoxelGame : Game
         IsMouseVisible = true;
 
         _graphics = new GraphicsDeviceManager(this);
+        _graphics.PreparingDeviceSettings += OnPreparingDeviceSettings;
 
         BlockOutlineRenderer = new BlockOutlineRenderer(this);
         WorldManager = new WorldManager(this);
         WorldRender = new WorldRenderingGameComponent(this);
+    }
+
+    private void OnPreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
+    {
+        _graphics.PreferMultiSampling = true;
+        //_graphics.GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
+        e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 8;
     }
 
     public Camera Camera { get; } = new();
@@ -117,7 +125,7 @@ public class VoxelGame : Game
     protected override void Draw(GameTime gameTime)
     {
         PerformanceCounters.Drawing.StartMeasurement("draw");
-        GraphicsDevice.Clear(Color.CornflowerBlue);
+        GraphicsDevice.Clear(Color.Black);
 
         base.Draw(gameTime);
         PerformanceCounters.Drawing.StopMeasurement();

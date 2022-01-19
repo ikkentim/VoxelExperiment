@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MyGame.Extensions;
 using MyGame.Rendering;
 using MyGame.Rendering.Meshing;
 using MyGame.World;
@@ -86,8 +87,9 @@ public class WorldRenderingGameComponent : DrawableGameComponent
     {   
         _rendererResources!.BlockFaceEffect.View = _camera.ViewMatrix;
         _rendererResources.BlockFaceEffect.Projection = GlobalGameContext.Current.Projection;
+        
+        _rendererResources.BlockFaceEffect.LightDirection = new Vector3(-0.5f, 0.5f, -0.6f).Normalized();
         GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
-
 
         foreach (var kv in _meshes)
         {

@@ -7,17 +7,17 @@ namespace MyGame.Rendering.Effects;
 public class BlockFaceEffect : Effect, IEffectMatrices
 {
     private readonly EffectParameter _lineColorParam;
-
-
     private readonly EffectParameter _textureParam;
     private readonly EffectParameter _textureSizeParam;
     private readonly EffectParameter _worldViewProjectionParam;
+    private readonly EffectParameter _lightDirectionParam;
     private DirtyFlags _dirtyFlags;
 
     private bool _drawLines;
     private Color _lineColor;
     private Matrix _projection;
     private Vector2 _textureSize;
+    private Vector3 _lightDirection;
     private Matrix _view;
     private Matrix _world;
 
@@ -27,6 +27,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         _worldViewProjectionParam = Parameters["WorldViewProjection"];
         _textureSizeParam = Parameters["TextureSize"];
         _lineColorParam = Parameters["LineColor"];
+        _lightDirectionParam = Parameters["LightDirection"];
 
         if (cloneSource is BlockFaceEffect known)
         {
@@ -36,6 +37,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _textureSize = known._textureSize;
             _lineColor = known._lineColor;
             _dirtyFlags = known._dirtyFlags;
+            _lightDirection = known._lightDirection;
         }
     }
 
@@ -54,7 +56,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _dirtyFlags |= DirtyFlags.TextureSize;
         }
     }
-
+    
     public Color LineColor
     {
         get => _lineColor;
@@ -62,6 +64,16 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         {
             _lineColor = value;
             _dirtyFlags |= DirtyFlags.LineColor;
+        }
+    }
+    
+    public Vector3 LightDirection
+    {
+        get => _lightDirection;
+        set
+        {
+            _lightDirection = value;
+            _dirtyFlags |= DirtyFlags.LightDirection;
         }
     }
 
@@ -111,17 +123,22 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         {
             _worldViewProjectionParam.SetValue(World * View * Projection);
         }
-
+        
         if ((_dirtyFlags & DirtyFlags.TextureSize) != 0)
         {
             _textureSizeParam.SetValue(_textureSize);
+        }
+
+        if ((_dirtyFlags & DirtyFlags.LightDirection) != 0)
+        {
+            _lightDirectionParam.SetValue(_lightDirection);
         }
 
         if ((_dirtyFlags & DirtyFlags.LineColor) != 0)
         {
             _lineColorParam.SetValue(_lineColor.ToVector4());
         }
-
+        
         if ((_dirtyFlags & DirtyFlags.Technique) != 0)
         {
             CurrentTechnique = _drawLines ? Techniques[1] : Techniques[0];
@@ -145,6 +162,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         WorldViewProjection,
         TextureSize,
         LineColor,
-        Technique
+        Technique,
+        LightDirection
     }
 }
