@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MyGame.Components;
 using MyGame.Data;
 using MyGame.Debugging;
@@ -12,12 +14,16 @@ namespace MyGame;
 
 public class VoxelGame : Game
 {
+    private const bool IsFullscreen = false;
+
     private readonly GraphicsDeviceManager _graphics;
+    private RenderTarget2D? _renderTarget;
+    private SpriteBatch? _spriteBatch;
+    private KeyboardState _keyboardState;
 
     public VoxelGame()
     {
         Content.RootDirectory = "Content";
-
         IsMouseVisible = true;
 
         _graphics = new GraphicsDeviceManager(this);
@@ -28,16 +34,8 @@ public class VoxelGame : Game
         WorldRender = new WorldRenderingGameComponent(this);
     }
 
-    private void OnPreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
-    {
-        _graphics.PreferMultiSampling = true;
-        //_graphics.GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
-        e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 8;
-    }
-
     public Camera Camera { get; } = new();
     public WorldManager WorldManager { get; }
-
     public BlockRegistry BlockRegistry { get; } = new();
     public TextureRegistry TextureRegistry { get; } = new();
     public AssetManager AssetManager { get; } = new();
@@ -70,6 +68,76 @@ public class VoxelGame : Game
         base.Initialize();
     }
 
+    protected override void LoadContent()
+    {
+        TextureRegistry.CreateTextureAtlasesAndLockRegistry(GraphicsDevice);
+        
+        // TODO: should happen every few ticks
+        WorldManager.UpdateLoadedChunks(IntVector3.Zero);
+
+        _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, false, SurfaceFormat.Bgr565, DepthFormat.Depth24Stencil8);
+           // new RenderTarget2D(GraphicsDevice, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height);
+
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
+        
+        base.LoadContent();
+    }
+
+    protected override void Update(GameTime gameTime)
+    {
+        PerformanceCounters.Update.Reset();
+        PerformanceCounters.Update.StartMeasurement("update");
+        base.Update(gameTime);
+
+        var kb = Keyboard.GetState();
+        if (kb.IsKeyDown(Keys.F11) && _keyboardState.IsKeyUp(Keys.F11))
+        {
+            if (_graphics.IsFullScreen)
+            {
+                _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
+                _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
+                _graphics.IsFullScreen = false;
+                _graphics.ApplyChanges();
+            }
+            else
+            {
+                _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+                _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+                _graphics.IsFullScreen = true;
+                _graphics.ApplyChanges();
+            }
+        }
+
+        _keyboardState = kb;
+
+        PerformanceCounters.Update.StopMeasurement();
+    }
+
+    protected override void Draw(GameTime gameTime)
+    {
+        PerformanceCounters.Drawing.StartMeasurement("draw");
+        
+        // Draw the scene to the render target.
+        GraphicsDevice.SetRenderTarget(_renderTarget);
+        
+        GraphicsDevice.Clear(Color.Black);
+        base.Draw(gameTime);
+        
+        // Render the scene from the render target to the back buffer.
+        GraphicsDevice.SetRenderTarget(null);
+        _spriteBatch!.Begin( SpriteSortMode.Immediate, GraphicsDevice.BlendState, null, GraphicsDevice.DepthStencilState, RasterizerState.CullNone );
+        _spriteBatch.Draw( _renderTarget, GraphicsDevice.Viewport.Bounds, Color.White );
+        _spriteBatch.End();
+        
+        // Reset graphics device changes made by the sprite batch.
+        GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+        GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        GraphicsDevice.BlendState = BlendState.AlphaBlend;
+        GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
+
+        PerformanceCounters.Drawing.StopMeasurement();
+    }
+    
     private static IEnumerable<Block> GetBlocks()
     {
         yield return AirBlock.Instance;
@@ -100,34 +168,13 @@ public class VoxelGame : Game
 
         _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
         _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
-        //_graphics.IsFullScreen = true;
+        _graphics.IsFullScreen = IsFullscreen;
         _graphics.ApplyChanges();
     }
-
-    protected override void LoadContent()
+    
+    private void OnPreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
     {
-        TextureRegistry.CreateTextureAtlasesAndLockRegistry(GraphicsDevice);
-        
-        // TODO: should happen every few ticks
-        WorldManager.UpdateLoadedChunks(IntVector3.Zero);
-
-        base.LoadContent();
-    }
-
-    protected override void Update(GameTime gameTime)
-    {
-        PerformanceCounters.Update.Reset();
-        PerformanceCounters.Update.StartMeasurement("update");
-        base.Update(gameTime);
-        PerformanceCounters.Update.StopMeasurement();
-    }
-
-    protected override void Draw(GameTime gameTime)
-    {
-        PerformanceCounters.Drawing.StartMeasurement("draw");
-        GraphicsDevice.Clear(Color.Black);
-
-        base.Draw(gameTime);
-        PerformanceCounters.Drawing.StopMeasurement();
+        _graphics.PreferMultiSampling = true;
+        e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 8;
     }
 }

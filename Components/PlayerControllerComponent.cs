@@ -97,7 +97,7 @@ public class PlayerControllerComponent : DrawableGameComponent
         {
             _escape = false;
         }
-
+        
         var m = Mouse.GetState();
         if (m.LeftButton == ButtonState.Pressed &&
             !_playerController.IsCapturingMouse &&
