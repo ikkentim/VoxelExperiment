@@ -20,6 +20,14 @@ public class FlatWorldGenerator : IWorldGenerator
             for (var y = 0; y < height; y++)
             for (var z = 0; z < Chunk.Size; z++)
                 Set(x, y, z, y == height - 1 ? "grass" : "dirt");
+
+            if(chunkPosition.X == 0 && chunkPosition.Z == 0)
+            {
+                for (var y = height; y < 16; y++)
+                {
+                    Set(4, y, 4, "stone");
+                }
+            }
         }
 
         return chunk;

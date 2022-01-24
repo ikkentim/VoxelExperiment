@@ -74,9 +74,8 @@ public class VoxelGame : Game
         
         // TODO: should happen every few ticks
         WorldManager.UpdateLoadedChunks(IntVector3.Zero);
-
-        _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, false, SurfaceFormat.Bgr565, DepthFormat.Depth24Stencil8);
-           // new RenderTarget2D(GraphicsDevice, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height);
+        
+        _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
 
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
@@ -118,6 +117,7 @@ public class VoxelGame : Game
         PerformanceCounters.Drawing.StartMeasurement("draw");
         
         // Draw the scene to the render target.
+        GlobalGameContext.Current.RenderTarget = _renderTarget!;
         GraphicsDevice.SetRenderTarget(_renderTarget);
         
         GraphicsDevice.Clear(Color.Black);
@@ -125,8 +125,14 @@ public class VoxelGame : Game
         
         // Render the scene from the render target to the back buffer.
         GraphicsDevice.SetRenderTarget(null);
+        GraphicsDevice.Clear(Color.Blue);
+
         _spriteBatch!.Begin( SpriteSortMode.Immediate, GraphicsDevice.BlendState, null, GraphicsDevice.DepthStencilState, RasterizerState.CullNone );
         _spriteBatch.Draw( _renderTarget, GraphicsDevice.Viewport.Bounds, Color.White );
+        _spriteBatch.End();
+        
+        _spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null);
+        _spriteBatch.Draw(WorldRender.ShadowMap, new Rectangle(0, 0, 250, 250), new Color(0.25f, 0, 0, 1));
         _spriteBatch.End();
         
         // Reset graphics device changes made by the sprite batch.

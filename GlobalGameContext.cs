@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace MyGame;
 
@@ -18,12 +19,14 @@ public class GlobalGameContext
     public VoxelGame Game { get; init; }
 
     public Vector2 WindowSize => Window.ClientBounds.Size.ToVector2();
-
+    
     public Matrix Projection => Matrix.CreatePerspectiveFieldOfView(
         MathHelper.PiOver4, // 90 fov
         Window.ClientBounds.Width / (float)Window.ClientBounds.Height,
         0.1f,
-        500f);
+        80f);
+
+    public RenderTarget2D RenderTarget { get; set; }
 
     public static void Initialize(VoxelGame game)
     {

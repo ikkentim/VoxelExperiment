@@ -80,7 +80,7 @@ public class ChunkMesh : IChunkMesh
         }
 
         PerformanceCounters.Drawing.StopMeasurement();
-
+        
         PerformanceCounters.Drawing.Add("draw", calls);
     }
 

@@ -11,14 +11,19 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     private readonly EffectParameter _textureSizeParam;
     private readonly EffectParameter _worldViewProjectionParam;
     private readonly EffectParameter _lightDirectionParam;
+    private readonly EffectParameter _lightsViewParam;
+    private readonly EffectParameter _worldParam;
+    private readonly EffectParameter _depthParam;
     private DirtyFlags _dirtyFlags;
 
     private bool _drawLines;
+    private bool _isShadowMap;
     private Color _lineColor;
     private Matrix _projection;
     private Vector2 _textureSize;
     private Vector3 _lightDirection;
     private Matrix _view;
+    private Matrix _lightViewProj;
     private Matrix _world;
 
     public BlockFaceEffect(Effect cloneSource) : base(cloneSource)
@@ -28,6 +33,9 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         _textureSizeParam = Parameters["TextureSize"];
         _lineColorParam = Parameters["LineColor"];
         _lightDirectionParam = Parameters["LightDirection"];
+        _depthParam = Parameters["DepthBuffer"];
+        _lightsViewParam = Parameters["LightViewProj"];
+        _worldParam = Parameters["World"];
 
         if (cloneSource is BlockFaceEffect known)
         {
@@ -38,14 +46,23 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _lineColor = known._lineColor;
             _dirtyFlags = known._dirtyFlags;
             _lightDirection = known._lightDirection;
+            _lightViewProj = known._lightViewProj;
         }
     }
-
+    
     public Texture2D Texture
     {
         get => _textureParam.GetValueTexture2D();
         set => _textureParam.SetValue(value);
     }
+
+    public Texture2D? DepthBuffer
+    {
+        get => _depthParam?.GetValueTexture2D();
+        set => _depthParam?.SetValue(value);
+    }
+
+
 
     public Vector2 TextureSize
     {
@@ -87,6 +104,16 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         }
     }
 
+    public bool IsShadowMap
+    {
+        get => _isShadowMap;
+        set
+        {
+            _isShadowMap = value;
+            _dirtyFlags |= DirtyFlags.Technique;
+        }
+    }
+
     public Matrix Projection
     {
         get => _projection;
@@ -96,7 +123,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _dirtyFlags |= DirtyFlags.WorldViewProjection;
         }
     }
-
+    
     public Matrix View
     {
         get => _view;
@@ -104,6 +131,16 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         {
             _view = value;
             _dirtyFlags |= DirtyFlags.WorldViewProjection;
+        }
+    }
+
+    public Matrix LightViewProj
+    {
+        get => _lightViewProj;
+        set
+        {
+            _lightViewProj = value;
+            _dirtyFlags |= DirtyFlags.LightViewProj;
         }
     }
 
@@ -116,11 +153,12 @@ public class BlockFaceEffect : Effect, IEffectMatrices
             _dirtyFlags |= DirtyFlags.WorldViewProjection;
         }
     }
-
+    
     protected override void OnApply()
     {
         if ((_dirtyFlags & DirtyFlags.WorldViewProjection) != 0)
         {
+            _worldParam.SetValue(World);
             _worldViewProjectionParam.SetValue(World * View * Projection);
         }
         
@@ -138,10 +176,19 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         {
             _lineColorParam.SetValue(_lineColor.ToVector4());
         }
+
+        if ((_dirtyFlags & DirtyFlags.LightViewProj) != 0)
+        {
+            _lightsViewParam.SetValue(_lightViewProj);
+        }
         
         if ((_dirtyFlags & DirtyFlags.Technique) != 0)
         {
-            CurrentTechnique = _drawLines ? Techniques[1] : Techniques[0];
+            CurrentTechnique = _isShadowMap
+                ? Techniques[2]
+                : _drawLines
+                    ? Techniques[1]
+                    : Techniques[0];
         }
 
         _dirtyFlags = DirtyFlags.None;
@@ -160,6 +207,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     {
         None,
         WorldViewProjection,
+        LightViewProj,
         TextureSize,
         LineColor,
         Technique,

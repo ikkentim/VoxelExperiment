@@ -10,10 +10,15 @@
 Texture2D<float4> Texture : register(t0);
 sampler TextureSampler : register(s0);
 
+Texture2D<float4> DepthBuffer : register(t1); //todo;rename to ShadowMap
+sampler DepthBufferSampler : register(s1);
+
+matrix World;
 matrix WorldViewProjection;
 float2 TextureSize;
 float4 LineColor;
 float3 LightDirection;
+matrix LightViewProj;
 
 struct VSInput
 {
@@ -29,19 +34,47 @@ struct VSOutput
     float3 Normal : NORMAL0;
     float2 TexCoord : TEXCOORD0;
     float2 TextureBase : TEXCOORD1;
+    float4 WorldPos : TEXCOORD2;
 };
 
-VSOutput MainVS(VSInput vin)
+struct VSShadowInput
 {
-    VSOutput vout;
-    
-    vout.PositionPS = mul(vin.Position, WorldViewProjection);
-    
-    vout.TexCoord = vin.TexCoord;
-    vout.TextureBase = vin.TextureBase;
-    vout.Normal = vin.Normal;
+    float4 Position : SV_Position;
+};
 
-    return vout;
+struct VSShadowOutput
+{
+    float4 Position : SV_Position;
+    float Depth : TEXCOORD0;
+};
+
+VSOutput MainVS(VSInput inp)
+{
+    VSOutput outp;
+    
+    outp.PositionPS = mul(inp.Position, WorldViewProjection);
+    
+    outp.TexCoord = inp.TexCoord;
+    outp.TextureBase = inp.TextureBase;
+    outp.Normal = normalize(mul(inp.Normal, (float3x4) World));
+    outp.WorldPos = mul(inp.Position, World);
+
+    return outp;
+}
+
+VSShadowOutput MainShadowVS(float4 position : SV_Position)
+{
+    VSShadowOutput outp;
+    
+    outp.Position = mul(position, mul(World, LightViewProj));
+    outp.Depth = outp.Position.z / outp.Position.w;
+
+    return outp;
+}
+
+float4 MainShadowPS(VSShadowOutput inp) : SV_Target0
+{
+    return float4(inp.Depth, 0, 0, 1);
 }
 
 float4 MainLineVS(float4 pos : SV_Position) : SV_Position
@@ -49,25 +82,47 @@ float4 MainLineVS(float4 pos : SV_Position) : SV_Position
     return mul(pos, WorldViewProjection);
 }
 
-float4 MainPS(VSOutput pin) : SV_Target0
+float4 MainPS(VSOutput inp) : SV_Target0
 {
+    // sample the texture
     float2 texCoord;
-    texCoord.x = (pin.TexCoord.x % 1) * TextureSize.x + pin.TextureBase.x;
-    texCoord.y = (pin.TexCoord.y % 1) * TextureSize.y + pin.TextureBase.y;
+    texCoord.x = (inp.TexCoord.x % 1) * TextureSize.x + inp.TextureBase.x;
+    texCoord.y = (inp.TexCoord.y % 1) * TextureSize.y + inp.TextureBase.y;
+    float4 diffuseColor = Texture.Sample(TextureSampler, texCoord);
+
+    // sample the shadow map
+    float4 lightingPosition = mul(inp.WorldPos, LightViewProj);
+    float2 ShadowTexCoord = 0.5 * lightingPosition.xy / lightingPosition.w + float2(0.5, 0.5);
+    ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+
+    float shadowdepth = DepthBuffer.Sample(DepthBufferSampler, ShadowTexCoord).r;
+	
+    // testing...
+   
+    float DepthBias = 0.0001;
+    float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+
     
-    float3 normal = normalize(pin.Normal);
+    float diffuseIntensity = saturate(dot(-LightDirection, inp.Normal));
+	
+    float4 AmbientColor = float4(0.15, 0.15, 0.15, 0);
+
+
+    float4 diffuse = diffuseIntensity * diffuseColor + AmbientColor;
+	
+    if (shadowdepth < ourdepth)
+    {
+        diffuse *= float4(0.5, 0.5, 0.5, 0);
+    };
+
+    diffuse.a = 1;
+    return diffuse;
     
-    float4 diffuse = float4(0.4, 0.4, 0.4, 1); // ambientLightColor
-    float diffuseLightColor = float4(1.0, 0.9, 0.8, 1);
+}
 
-    float NdotL = saturate(dot(normal, LightDirection));
-    diffuse += NdotL * diffuseLightColor;
-
-    float4 col = Texture.Sample(TextureSampler, texCoord) * diffuse;
-
-    col.a = 1;
-
-    return col;
+float4 MainLinePS(VSOutput inp) : SV_Target0
+{
+    return LineColor;
 }
 
 float4 MainLinePS(float4 pos : SV_Position) : SV_Target0
@@ -92,3 +147,12 @@ technique BlockFaceLines
         PixelShader = compile PS_SHADERMODEL MainLinePS();
     }
 }
+
+technique BlockFaceShadowMap
+{
+    pass Tex
+    {
+        VertexShader = compile VS_SHADERMODEL MainShadowVS();
+        PixelShader = compile PS_SHADERMODEL MainShadowPS();
+    }
+};
