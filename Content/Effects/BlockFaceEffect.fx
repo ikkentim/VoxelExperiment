@@ -10,15 +10,23 @@
 Texture2D<float4> Texture : register(t0);
 sampler TextureSampler : register(s0);
 
-Texture2D<float4> DepthBuffer : register(t1); //todo;rename to ShadowMap
-sampler DepthBufferSampler : register(s1);
+Texture2D<float4> ShadowMap : register(t1);
+sampler ShadowMapSampler : register(s1) =
+sampler_state
+{
+    Texture = <ShadowMap>;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
 
 matrix World;
-matrix WorldViewProjection;
+matrix ViewProjection;
 float2 TextureSize;
 float4 LineColor;
 float3 LightDirection;
 matrix LightViewProj;
+float2 ShadowMapSize;
 
 struct VSInput
 {
@@ -52,7 +60,7 @@ VSOutput MainVS(VSInput inp)
 {
     VSOutput outp;
     
-    outp.PositionPS = mul(inp.Position, WorldViewProjection);
+    outp.PositionPS = mul(inp.Position, mul(World, ViewProjection));
     
     outp.TexCoord = inp.TexCoord;
     outp.TextureBase = inp.TextureBase;
@@ -79,15 +87,13 @@ float4 MainShadowPS(VSShadowOutput inp) : SV_Target0
 
 float4 MainLineVS(float4 pos : SV_Position) : SV_Position
 {
-    return mul(pos, WorldViewProjection);
+    return mul(pos, mul(World, ViewProjection));
 }
 
 float4 MainPS(VSOutput inp) : SV_Target0
 {
     // sample the texture
-    float2 texCoord;
-    texCoord.x = (inp.TexCoord.x % 1) * TextureSize.x + inp.TextureBase.x;
-    texCoord.y = (inp.TexCoord.y % 1) * TextureSize.y + inp.TextureBase.y;
+    float2 texCoord = (inp.TexCoord % 1) * TextureSize + inp.TextureBase;
     float4 diffuseColor = Texture.Sample(TextureSampler, texCoord);
 
     // sample the shadow map
@@ -95,25 +101,41 @@ float4 MainPS(VSOutput inp) : SV_Target0
     float2 ShadowTexCoord = 0.5 * lightingPosition.xy / lightingPosition.w + float2(0.5, 0.5);
     ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
 
-    float shadowdepth = DepthBuffer.Sample(DepthBufferSampler, ShadowTexCoord).r;
-	
-    // testing...
-   
-    float DepthBias = 0.0001;
-    float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+    float2 TexelSize = float2(1, 1) / ShadowMapSize;
 
-    
-    float diffuseIntensity = saturate(dot(-LightDirection, inp.Normal));
-	
+    float DepthBias = 0.0005;
     float4 AmbientColor = float4(0.15, 0.15, 0.15, 0);
+    float shadowStrength = 0.5;
+
+
+
+	
+    float vertexDepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+    float diffuseIntensity = max(0.2, saturate(dot(-LightDirection, inp.Normal)));
+	
+    float shadow = 0;
+
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            float shadowDepth = ShadowMap.Sample(ShadowMapSampler, ShadowTexCoord + float2(x, y) * TexelSize).r;
+            if (shadowDepth < vertexDepth)
+            {
+                shadow += shadowStrength;
+            }
+        }
+    }
+    
+    shadow /= 9;
+
+
 
 
     float4 diffuse = diffuseIntensity * diffuseColor + AmbientColor;
 	
-    if (shadowdepth < ourdepth)
-    {
-        diffuse *= float4(0.5, 0.5, 0.5, 0);
-    };
+    diffuse *= float4(1 - shadow, 1 - shadow, 1 - shadow, 0);
+  
 
     diffuse.a = 1;
     return diffuse;

@@ -50,8 +50,8 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         _rendererResources.LoadContent(Game);
 
         _shadowMap = new RenderTarget2D(GraphicsDevice,
-                3000,
-                3000,
+                4000,
+                4000,
                 false,
                 SurfaceFormat.Single,
                 DepthFormat.Depth24);
@@ -111,7 +111,13 @@ public class WorldRenderingGameComponent : DrawableGameComponent
 
     private (Matrix view, Matrix projection) GetShadowMapMatrix(Vector3 lightDirection)
     {
-        var inverseVp = Matrix.Invert(Game.Camera.ViewMatrix * GlobalGameContext.Current.Projection);
+
+        var tinyProj = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, // 90 fov
+            GlobalGameContext.Current.Window.ClientBounds.Width / (float)GlobalGameContext.Current.Window.ClientBounds.Height,
+            0.1f,
+            10f);
+
+        var inverseVp = Matrix.Invert(Game.Camera.ViewMatrix * tinyProj);
         
         Span<Vector3> cornersWs = stackalloc Vector3[8];
         for (var i = 0; i < 8; i++)
@@ -127,8 +133,8 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         // Position the shadow-caster camera so that it's looking at the centroid,
         // and backed up in the direction of the sunlight
         const float nearClipOffset = 32;
-        const float farZ = 80f;
-        var distFromCentroid = farZ + nearClipOffset;
+        const float farZ = 20f;
+        const float distFromCentroid = farZ + nearClipOffset;
         var lightPoint = frustumCentroid - lightDirection.Normalized() * distFromCentroid;
         var viewMatrix = Matrix.CreateLookAt(lightPoint, frustumCentroid, new Vector3(0,1,0));
         
@@ -172,14 +178,13 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
 
         // Draw shadow map first
-        var (sin, cos) =MathF.SinCos((float)gameTime.TotalGameTime.TotalSeconds / 10);
-        var lightDirection = new Vector3(sin, cos, 1).Normalized();
+        var lightDirection = new Vector3(1, -1, 1).Normalized();
         var (view, proj) = GetShadowMapMatrix(lightDirection);
 
         GraphicsDevice.SetRenderTarget(_shadowMap);
         GraphicsDevice.Clear(Color.White);
         
-        _rendererResources.BlockFaceEffect.LightViewProj = view * proj;
+        _rendererResources!.BlockFaceEffect.LightViewProjection = view * proj;
         _rendererResources.BlockFaceEffect.IsShadowMap = true;
         
         foreach (var (chunk, mesh) in _meshes)
@@ -192,10 +197,11 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         GraphicsDevice.SetRenderTarget(GlobalGameContext.Current.RenderTarget);
         
         // Render scene
-        _rendererResources.BlockFaceEffect.View = Keyboard.GetState().IsKeyDown(Keys.F1) ? view : _camera.ViewMatrix;
-        _rendererResources.BlockFaceEffect.Projection = Keyboard.GetState().IsKeyDown(Keys.F1) ? proj : GlobalGameContext.Current.Projection;
+        _rendererResources.BlockFaceEffect.View = _camera.ViewMatrix;
+        _rendererResources.BlockFaceEffect.Projection = GlobalGameContext.Current.Projection;
         
-        _rendererResources.BlockFaceEffect.DepthBuffer = _shadowMap;
+        _rendererResources.BlockFaceEffect.ShadowMap = _shadowMap;
+        _rendererResources.BlockFaceEffect.ShadowMapSize = new Vector2(4000, 4000);
         _rendererResources.BlockFaceEffect.LightDirection = lightDirection;
 
         foreach (var (chunk, mesh) in _meshes)
@@ -204,6 +210,6 @@ public class WorldRenderingGameComponent : DrawableGameComponent
             mesh.Render(GraphicsDevice, _rendererResources!);
         }
         
-        _rendererResources.BlockFaceEffect.DepthBuffer = null;
+        _rendererResources.BlockFaceEffect.ShadowMap = null;
     }
 }

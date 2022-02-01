@@ -1,0 +1,308 @@
+
+public class EffectBase<T> : Effect where T : EffectBase<T>
+{
+    public EffectBase(Effect cloneSource) : base(cloneSource)
+    {
+    }
+
+    private class EffectData<T>
+    {
+        public static Dictionary<string, string> FieldMap = new();
+        public static Dictionary<string, Type> Wrapper = new();
+
+        static EffectData()
+        {
+
+        }
+
+        private static void PopulateFieldMap()
+        {
+            foreach (var prop in typeof(T).GetProperties())
+            {
+                var attr = prop.GetCustomAttribute<EffectFieldAttribute>();
+
+                if (attr == null)
+                {
+                    return;
+                }
+
+                var field = attr.Name ?? prop.Name;
+
+                FieldMap[prop.Name] = field;
+                
+                if (prop.PropertyType == typeof(Vector3))
+                {
+                    Wrapper[prop.Name] = typeof(EffectParamWrapperVector3);
+                }
+                else if (prop.PropertyType == typeof(Matrix))
+                {
+                    Wrapper[prop.Name] = typeof(EffectParamWrapperVector3);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unsupported property type");
+                }
+            }
+        }
+    }
+
+    private class EffectParamWrapperVector3
+    {
+        private EffectParameter _param;
+
+        public void Initialize(Effect effect, string name)
+        {
+
+        }
+    }
+}
+
+public class BlockFaceTest : EffectBase<BlockFaceTest>
+{
+    public BlockFaceTest(Effect cloneSource) : base(cloneSource)
+    {
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property)]
+public class EffectFieldAttribute : Attribute
+{
+    public EffectFieldAttribute(string name)
+    {
+        Name = name;
+    }
+
+    public EffectFieldAttribute()
+    {
+
+    }
+
+    public string? Name { get; }
+}
+
+
+
+
+// attempt 2
+
+
+public abstract class EffectBase : Effect
+{
+    private IEffectParam[]? _parameters;
+
+    private int _dirtyFlag;
+
+    protected EffectBase(Effect effect) : base(effect)
+    {
+
+    }
+
+    protected void BindParameters(params IEffectParam[] parameters)
+    {
+        _parameters = parameters;
+
+        var flag = 1;
+        foreach (var p in _parameters)
+        {
+            p.Bind(this, flag);
+            flag <<= 1;
+        }
+    }
+    
+    protected override void OnApply()
+    {
+        if (_parameters == null)
+        {
+            throw new InvalidOperationException("Parameters not bound");
+        }
+
+        var flag = 1;
+        var paramCount = _parameters.Length;
+        for (var i = 0; i < paramCount; i++)
+        {
+            if ((_dirtyFlag & flag) == flag)
+            {
+                _parameters[i].SetParam();
+            }
+
+            flag <<= 1;
+        }
+
+        _dirtyFlag = 0;
+    }
+
+    public interface IEffectParam
+    {
+        void SetParam();
+        void Bind(EffectBase effect, int dirtyFlag);
+    }
+
+    public class EffectParam<T> : IEffectParam
+    {
+        private static readonly Action<EffectParameter, T?> Setter;
+
+        static EffectParam()
+        {
+            if (typeof(T) == typeof(Matrix))
+            {
+                Setter = Cast((EffectParameter e, Matrix v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(Color))
+            {
+                Setter = Cast((EffectParameter e, Color v) => e.SetValue(v.ToVector4()));
+            }
+            else if (typeof(T) == typeof(Vector4))
+            {
+                Setter = Cast((EffectParameter e, Vector4 v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(Vector3))
+            {
+                Setter = Cast((EffectParameter e, Vector3 v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(Vector2))
+            {
+                Setter = Cast((EffectParameter e, Vector2 v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                Setter = Cast((EffectParameter e, float v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(int))
+            {
+                Setter = Cast((EffectParameter e, int v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                Setter = Cast((EffectParameter e, bool v) => e.SetValue(v));
+            }
+            else if (typeof(T) == typeof(Texture2D))
+            {
+                Setter = Cast((EffectParameter e, Texture2D? v) => e.SetValue(v));
+            }
+            else
+            {
+                throw new InvalidOperationException("typeof(T) unsupported");
+            }
+        }
+
+        private static Action<EffectParameter, T?> Cast(object pepper)
+        {
+            return (Action<EffectParameter, T?>)pepper;
+        }
+        
+        private readonly string _name;
+        private EffectParameter? _parameter;
+        private T? _backingField;
+        private EffectBase? _effect;
+        private int _dirtyFlag;
+
+        public EffectParam(string name)
+        {
+            _name = name;
+        }
+
+        public T? Value
+        {
+            get => _backingField;
+            set
+            {
+                if (_dirtyFlag == 0)
+                {
+                    throw new InvalidOperationException("Effect parameter has not been bound to an effect");
+                }
+                _backingField = value;
+                _effect!._dirtyFlag |= _dirtyFlag;
+            }
+        }
+
+        public void SetParam()
+        {
+            if (_parameter != null)
+            {
+                Setter(_parameter, _backingField);
+            }
+        }
+
+        public void Bind(EffectBase effect, int dirtyFlag)
+        {
+            _effect = effect;
+            _parameter = effect.Parameters[_name];
+            _dirtyFlag = dirtyFlag;
+        }
+    }
+}
+
+public class ImplSample : EffectBase
+{
+
+    public ImplSample(Effect effect) : base(effect)
+    {
+        BindParameters(
+            _lineColorParam,
+            _textureSizeParam,
+            _worldViewProjectionParam,
+            _lightDirectionParam,
+            _lightsViewParam,
+            _textureParam,
+            _worldParam,
+            _shadowMapParam
+        );
+    }
+    
+    
+    private readonly EffectParam<Color> _lineColorParam = new("LineColor");
+    public Color LineColor
+    {
+        get => _lineColorParam.Value;
+        set => _lineColorParam.Value = value;
+    }
+    
+    private readonly EffectParam<Texture2D> _textureParam = new("Texture");
+    public Texture2D? Texture
+    {
+        get => _textureParam.Value;
+        set => _textureParam.Value = value;
+    }
+    
+    private readonly EffectParam<Vector2> _textureSizeParam = new("TextureSize");
+    public Vector2 TextureSize
+    {
+        get => _textureSizeParam.Value;
+        set => _textureSizeParam.Value = value;
+    }
+    
+    private readonly EffectParam<Matrix> _worldViewProjectionParam = new("WorldViewProjection");
+    public Matrix WorldViewProjection
+    {
+        get => _worldViewProjectionParam.Value;
+        set => _worldViewProjectionParam.Value = value;
+    }
+
+    private readonly EffectParam<Vector3> _lightDirectionParam = new("LightDirection");
+    public Vector3 LightDirection
+    {
+        get => _lightDirectionParam.Value;
+        set => _lightDirectionParam.Value = value;
+    }
+
+    private readonly EffectParam<Matrix> _lightsViewParam = new("LightsView");
+    public Matrix LightsView
+    {
+        get => _lightsViewParam.Value;
+        set => _lightsViewParam.Value = value;
+    }
+
+    private readonly EffectParam<Matrix> _worldParam = new("World");
+    public Matrix World
+    {
+        get => _worldParam.Value;
+        set => _worldParam.Value = value;
+    }
+    
+    private readonly EffectParam<Texture2D> _shadowMapParam = new("DepthBuffer");
+    public Texture2D? ShadowMap
+    {
+        get => _shadowMapParam.Value;
+        set => _shadowMapParam.Value = value;
+    }
+}
