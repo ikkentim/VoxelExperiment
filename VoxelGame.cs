@@ -131,9 +131,9 @@ public class VoxelGame : Game
         _spriteBatch.Draw( _renderTarget, GraphicsDevice.Viewport.Bounds, Color.White );
         _spriteBatch.End();
         
-        _spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null);
+        /*_spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null);
         _spriteBatch.Draw(WorldRender.ShadowMap, new Rectangle(0, 0, 250, 250), new Color(0.25f, 0, 0, 1));
-        _spriteBatch.End();
+        _spriteBatch.End();*/
         
         // Reset graphics device changes made by the sprite batch.
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -172,6 +172,8 @@ public class VoxelGame : Game
         TargetElapsedTime = TimeSpan.FromMilliseconds(1);
         MaxElapsedTime = TimeSpan.FromMilliseconds(1000f / 30);
 
+        _graphics.GraphicsProfile = GraphicsProfile.HiDef;
+        _graphics.ApplyChanges();
         _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width - 400;
         _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height - 400;
         _graphics.IsFullScreen = IsFullscreen;

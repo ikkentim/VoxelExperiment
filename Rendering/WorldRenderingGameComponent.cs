@@ -39,7 +39,7 @@ public class WorldRenderingGameComponent : DrawableGameComponent
     }
 
     public new VoxelGame Game => (VoxelGame)base.Game;
-
+    
     private RenderTarget2D? _shadowMap;
 
     public RenderTarget2D ShadowMap => _shadowMap!;
@@ -50,13 +50,11 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         _rendererResources.LoadContent(Game);
 
         _shadowMap = new RenderTarget2D(GraphicsDevice,
-                4000,
-                4000,
-                false,
-                SurfaceFormat.Single,
-                DepthFormat.Depth24);
-          //  new RenderTarget2D(GraphicsDevice,2000, 2000, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
-        
+            4000, 4000,
+            false,
+            SurfaceFormat.Single,
+            DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents, false, 4);
+
         base.LoadContent();
     }
     
@@ -109,13 +107,31 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         // todo: on chunk unload remove chunk mesh
     }
 
-    private (Matrix view, Matrix projection) GetShadowMapMatrix(Vector3 lightDirection)
+    // private float[] ttt = new float[]
+    // {
+    //     0.0001f,
+    //     10f,
+    //     25f,
+    //     60f,
+    //     128f
+    // };
+    private float[] ttt2 = new float[]
+    {
+        0.0001f,
+        10f,
+        9f,
+        25f,
+        24f,
+        60f,
+        59f,
+        128f
+    };
+    private (Matrix view, Matrix projection) GetShadowMapMatrix(Vector3 lightDirection, int mapIndex)
     {
 
         var tinyProj = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, // 90 fov
             GlobalGameContext.Current.Window.ClientBounds.Width / (float)GlobalGameContext.Current.Window.ClientBounds.Height,
-            0.1f,
-            10f);
+            ttt2[mapIndex * 2], ttt2[mapIndex * 2 + 1]);
 
         var inverseVp = Matrix.Invert(Game.Camera.ViewMatrix * tinyProj);
         
@@ -132,10 +148,11 @@ public class WorldRenderingGameComponent : DrawableGameComponent
 
         // Position the shadow-caster camera so that it's looking at the centroid,
         // and backed up in the direction of the sunlight
-        const float nearClipOffset = 32;
+        const float nearClipOffset = 64;
         const float farZ = 20f;
         const float distFromCentroid = farZ + nearClipOffset;
         var lightPoint = frustumCentroid - lightDirection.Normalized() * distFromCentroid;
+
         var viewMatrix = Matrix.CreateLookAt(lightPoint, frustumCentroid, new Vector3(0,1,0));
         
         // Determine the position of the frustum corners in light space
@@ -179,21 +196,26 @@ public class WorldRenderingGameComponent : DrawableGameComponent
 
         // Draw shadow map first
         var lightDirection = new Vector3(1, -1, 1).Normalized();
-        var (view, proj) = GetShadowMapMatrix(lightDirection);
+        
+        _rendererResources!.BlockFaceEffect.IsShadowMap = true;
 
-        GraphicsDevice.SetRenderTarget(_shadowMap);
-        GraphicsDevice.Clear(Color.White);
-        
-        _rendererResources!.BlockFaceEffect.LightViewProjection = view * proj;
-        _rendererResources.BlockFaceEffect.IsShadowMap = true;
-        
-        foreach (var (chunk, mesh) in _meshes)
+        for (var i = 0; i < 4; i++)
         {
-            _rendererResources.BlockFaceEffect.World = Matrix.CreateTranslation(chunk.WorldPosition);
-            mesh.Render(GraphicsDevice, _rendererResources!);
-        }       
+            var (view, proj) = GetShadowMapMatrix(lightDirection, i);
+
+            GraphicsDevice.SetRenderTarget(_shadowMap, i);
+
+            GraphicsDevice.Clear(Color.White);
+
+            _rendererResources.BlockFaceEffect.View = view;
+            _rendererResources.BlockFaceEffect.Projection = proj;
+
+            _rendererResources.BlockFaceEffect.SetLightViewProjection(i, view * proj);
+            RenderChunks();
+        }
 
         _rendererResources.BlockFaceEffect.IsShadowMap = false;
+
         GraphicsDevice.SetRenderTarget(GlobalGameContext.Current.RenderTarget);
         
         // Render scene
@@ -203,13 +225,18 @@ public class WorldRenderingGameComponent : DrawableGameComponent
         _rendererResources.BlockFaceEffect.ShadowMap = _shadowMap;
         _rendererResources.BlockFaceEffect.ShadowMapSize = new Vector2(4000, 4000);
         _rendererResources.BlockFaceEffect.LightDirection = lightDirection;
+        
+        RenderChunks();
+        
+        _rendererResources.BlockFaceEffect.ShadowMap = null;
+    }
 
+    private void RenderChunks()
+    {
         foreach (var (chunk, mesh) in _meshes)
         {
             _rendererResources.BlockFaceEffect.World = Matrix.CreateTranslation(chunk.WorldPosition);
             mesh.Render(GraphicsDevice, _rendererResources!);
         }
-        
-        _rendererResources.BlockFaceEffect.ShadowMap = null;
     }
 }

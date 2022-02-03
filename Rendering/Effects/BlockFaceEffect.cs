@@ -6,15 +6,15 @@ namespace MyGame.Rendering.Effects;
 
 public class BlockFaceEffect : Effect, IEffectMatrices
 {
-    private readonly EffectParameter _lineColorParam;
-    private readonly EffectParameter _textureParam;
-    private readonly EffectParameter _textureSizeParam;
-    private readonly EffectParameter _viewProjectionParam;
-    private readonly EffectParameter _lightDirectionParam;
-    private readonly EffectParameter _lightsViewParam;
-    private readonly EffectParameter _worldParam;
-    private readonly EffectParameter _shadowMapParam;
-    private readonly EffectParameter _shadowMapSizeParam;
+    private readonly EffectParameter? _lineColorParam;
+    private readonly EffectParameter? _textureParam;
+    private readonly EffectParameter? _textureSizeParam;
+    private readonly EffectParameter? _viewProjectionParam;
+    private readonly EffectParameter? _lightDirectionParam;
+    private readonly EffectParameter? _lightsViewParam;
+    private readonly EffectParameter? _worldParam;
+    private readonly EffectParameter? _shadowMapParam;
+    private readonly EffectParameter? _shadowMapSizeParam;
 
     private DirtyFlags _dirtyFlags;
 
@@ -24,7 +24,7 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     private Vector2 _textureSize;
     private Vector2 _shadowMapSize;
     private Vector3 _lightDirection;
-    private Matrix _lightViewProjection;
+    private Matrix[] _lightViewProjection = new Matrix[4];
     private Matrix _world;
     private Matrix _view;
     private Matrix _projection;
@@ -60,10 +60,10 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         }
     }
     
-    public Texture2D Texture
+    public Texture2D? Texture
     {
-        get => _textureParam.GetValueTexture2D();
-        set => _textureParam.SetValue(value);
+        get => _textureParam?.GetValueTexture2D();
+        set => _textureParam?.SetValue(value);
     }
 
     public Texture2D? ShadowMap
@@ -152,14 +152,10 @@ public class BlockFaceEffect : Effect, IEffectMatrices
         }
     }
 
-    public Matrix LightViewProjection
+    public void SetLightViewProjection(int index, Matrix value)
     {
-        get => _lightViewProjection;
-        set
-        {
-            _lightViewProjection = value;
-            _dirtyFlags |= DirtyFlags.LightViewProj;
-        }
+        _lightViewProjection[index] = value;
+        _dirtyFlags |= DirtyFlags.LightViewProj;
     }
 
     public Matrix World
@@ -176,36 +172,36 @@ public class BlockFaceEffect : Effect, IEffectMatrices
     {
         if ((_dirtyFlags & DirtyFlags.ViewProjection) != 0)
         {
-            _viewProjectionParam.SetValue(View * Projection);
+            _viewProjectionParam?.SetValue(View * Projection);
         }
         if ((_dirtyFlags & DirtyFlags.World) != 0)
         {
-            _worldParam.SetValue(World);
+            _worldParam?.SetValue(World);
         }
         
         if ((_dirtyFlags & DirtyFlags.TextureSize) != 0)
         {
-            _textureSizeParam.SetValue(_textureSize);
+            _textureSizeParam?.SetValue(_textureSize);
         }
 
         if ((_dirtyFlags & DirtyFlags.LightDirection) != 0)
         {
-            _lightDirectionParam.SetValue(_lightDirection);
+            _lightDirectionParam?.SetValue(_lightDirection);
         }
 
         if ((_dirtyFlags & DirtyFlags.LineColor) != 0)
         {
-            _lineColorParam.SetValue(_lineColor.ToVector4());
+            _lineColorParam?.SetValue(_lineColor.ToVector4());
         }
         
         if ((_dirtyFlags & DirtyFlags.LightViewProj) != 0)
         {
-            _lightsViewParam.SetValue(_lightViewProjection);
+            _lightsViewParam?.SetValue(_lightViewProjection);
         }
 
         if ((_dirtyFlags & DirtyFlags.ShadowMapSize) != 0)
         {
-            _shadowMapSizeParam.SetValue(_shadowMapSize);
+            _shadowMapSizeParam?.SetValue(_shadowMapSize);
         }
 
         if ((_dirtyFlags & DirtyFlags.Technique) != 0)

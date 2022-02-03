@@ -24,7 +24,7 @@ public class GlobalGameContext
         MathHelper.PiOver4, // 90 fov
         Window.ClientBounds.Width / (float)Window.ClientBounds.Height,
         0.1f,
-        80f);
+        256f);
 
     public RenderTarget2D RenderTarget { get; set; }
 
